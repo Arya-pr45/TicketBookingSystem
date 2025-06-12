@@ -1,0 +1,35 @@
+﻿@{
+	ViewData["Title"] = "Welcome";
+}
+
+<style>
+	body.dark-mode {
+		background-color: #121212;
+		color: #e0e0e0;
+	}
+
+	.dark-mode .card {
+		background-color: #1e1e1e;
+		color: #fff;
+		border: 1px solid #333;
+	}
+
+	.dark-mode .btn-outline-dark {
+		color: #fff;
+		border-color: #fff;
+	}
+</style>
+
+<div class="container text-center mt-5">
+
+	<div class="card shadow p-4">
+		<h1 class="display-4 mb-4">Welcome to Our E-Commerce Portal</h1>
+		<p class="lead">Shop, manage orders, and experience seamless service powered by AI-enhanced backend.</p>
+
+		<div class="mt-5 d-flex justify-content-center gap-3">
+			<a asp-controller="Auth" asp-action="Login" class="btn btn-primary btn-lg">Login</a>
+			<a asp-controller="Auth" asp-action="Register" class="btn btn-outline-primary btn-lg">Register</a>
+		</div>
+	</div>
+</div>
+

@@ -1,0 +1,12 @@
+﻿@model TicketBookingWebApp.Application.DTOs.EventDto
+@{
+    ViewData["Title"] = "Event Details";
+}
+<div class="container mt-4">
+    <h2>@Model.Title</h2>
+    <p>@Model.Description</p>
+    <p><strong>Date:</strong> @Model.EventDateTime.ToString("f")</p>
+    <p><strong>Price:</strong> ₹@Model.Price</p>
+    <p><strong>Total Tickets:</strong> @Model.TotalTickets</p>
+    <a class="btn btn-success" href="@Url.Action("BookTicket", "Event", new { id = Model.Id })">Book Now</a>
+</div>

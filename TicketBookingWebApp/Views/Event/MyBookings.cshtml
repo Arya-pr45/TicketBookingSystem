@@ -1,0 +1,37 @@
+﻿@model IEnumerable<TicketBookingWebApp.Application.DTOs.BookingDto>
+@{
+    ViewData["Title"] = "My Bookings";
+}
+<div class="container mt-4">
+    <h2>My Bookings</h2>
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">You have not booked any tickets yet.</div>
+    }
+    else
+    {
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Event</th>
+                    <th>Date & Time</th>
+                    <th>Type</th>
+                    <th>Seats</th>
+                    <th>Quantity</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var booking in Model)
+                {
+                    <tr>
+                        <td>@booking.EventTitle</td>
+                        <td>@booking.EventDateTime.ToString("f")</td>
+                        <td>@(booking.IsSeatBased ? "Seat Based" : "General")</td>
+                        <td>@(booking.IsSeatBased ? string.Join(", ", booking.SeatIds) : "N/A")</td>
+                        <td>@booking.Quantity</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>

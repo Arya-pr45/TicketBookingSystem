@@ -1,0 +1,13 @@
+﻿@model TicketBookingWebApp.Application.DTOs.BookingDto
+@{
+    ViewData["Title"] = "Booking Confirmation";
+}
+<div class="container mt-4">
+    <div class="alert alert-success">
+        <h4>Booking Successful!</h4>
+        <p><strong>Event:</strong> @Model.EventTitle</p>
+        <p><strong>Date:</strong> @Model.EventDateTime.ToString("f")</p>
+        <p><strong>Seats:</strong> @(Model.IsSeatBased ? string.Join(", ", Model.SeatIds) : "General")</p>
+        <p><strong>Quantity:</strong> @Model.Quantity</p>
+    </div>
+</div>

@@ -1,0 +1,27 @@
+﻿@model IEnumerable<TicketBookingWebApp.Application.DTOs.VenueDto>
+@{
+    ViewData["Title"] = "Manage Venues";
+}
+<div class="container mt-4">
+    <h2>Venues</h2>
+    <a class="btn btn-primary mb-3" href="@Url.Action("AddVenue")">Add Venue</a>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Location</th>
+                <th>Capacity</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var venue in Model)
+            {
+                <tr>
+                    <td>@venue.Name</td>
+                    <td>@venue.Location</td>
+                    <td>@venue.Capacity</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

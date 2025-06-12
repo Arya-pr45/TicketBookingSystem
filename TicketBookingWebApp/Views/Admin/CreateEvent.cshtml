@@ -1,0 +1,45 @@
+﻿@model TicketBookingWebApp.Application.DTOs.EventDto
+@{
+    ViewData["Title"] = "Create Event";
+}
+<div class="container mt-4">
+    <h2>Create Event</h2>
+    <form asp-action="CreateEvent" method="post">
+        <div class="form-group">
+            <label asp-for="Title"></label>
+            <input asp-for="Title" class="form-control" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Description"></label>
+            <textarea asp-for="Description" class="form-control"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="EventDateTime"></label>
+            <input asp-for="EventDateTime" class="form-control" type="datetime-local" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="VenueId"></label>
+            <select asp-for="VenueId" class="form-control" asp-items="@ViewBag.Venues">
+                <option value="">Select</option>
+            </select>
+            <span asp-validation-for="VenueId" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="IsSeatBased"></label>
+            <input asp-for="IsSeatBased" type="checkbox" class="form-check-input" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="TotalTickets"></label>
+            <input asp-for="TotalTickets" class="form-control" />
+        </div>
+
+        <button type="submit" class="btn btn-success">Create</button>
+        <a class="btn btn-secondary" href="@Url.Action("Index")">Cancel</a>
+    </form>
+</div>

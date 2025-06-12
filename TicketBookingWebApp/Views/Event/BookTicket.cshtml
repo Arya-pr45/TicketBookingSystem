@@ -1,0 +1,29 @@
+﻿@model TicketBookingWebApp.Application.DTOs.BookingDto
+
+@{
+    ViewData["Title"] = "Book Ticket";
+}
+<div class="container mt-4">
+    <h2>Book Ticket for: @Model.EventTitle</h2>
+    <form asp-action="BookTicket" method="post">
+        <input type="hidden" asp-for="EventId" />
+        <div class="mb-3">
+            @if (Model.IsSeatBased)
+            {
+                <label for="SeatIds" class="form-label">Select Seat(s)</label>
+                <select asp-for="SeatIds" class="form-select" multiple>
+                    @foreach (var seatId in Model.AvailableSeatIds)
+                    {
+                        <option value="@seatId">Seat #@seatId</option>
+                    }
+                </select>
+            }
+            else
+            {
+                <label for="Quantity" class="form-label">Quantity</label>
+                <input type="number" asp-for="Quantity" class="form-control" min="1" required />
+            }
+        </div>
+        <button type="submit" class="btn btn-primary">Book Now</button>
+    </form>
+</div>

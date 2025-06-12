@@ -1,0 +1,46 @@
+﻿@model IEnumerable<TicketBookingWebApp.Application.DTOs.EventDto>
+@{
+    ViewData["Title"] = "Manage Events";
+}
+<div class="container mt-4">
+    <a class="btn btn-primary mb-3" href="@Url.Action("CreateEvent")">Create New Event</a>
+    <a class="btn btn-primary mb-3" href="@Url.Action("AddVenue")">Create New Venue</a>
+    <h2>Events</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>EventTitle</th>
+                <th>Date & Time</th>
+                <th>Venue</th>
+                <th>Type</th>
+                <th>Tickets</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var evt in Model)
+            {
+                <tr>
+                    <td>@evt.Title</td>
+                    <td>@evt.EventDateTime.ToString("f")</td>
+                    <td>@evt.VenueId</td>
+                    <td>@(evt.IsSeatBased ? "Seat-Based" : "Quantity-Based")</td>
+                    <td>@evt.TotalTickets</td>
+                    <td>
+                        <form asp-action="EditEvent" asp-controller="Admin" method="get" style="display:inline;">
+                            <input type="hidden" name="id" value="@evt.Id" />
+                          
+                            <button type="submit" class="btn btn-sm btn-warning">Edit</button>
+                        </form>
+
+                        <form asp-action="DeleteEvent" asp-controller="Admin" method="get" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this event?');">
+                            <input type="hidden" name="id" value="@evt.Id" />
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+
+            }
+        </tbody>
+    </table>
+</div>
