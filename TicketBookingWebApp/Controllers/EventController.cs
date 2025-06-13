@@ -16,11 +16,22 @@ namespace TicketBookingWebApp.Web.Controllers
             _eventService = eventService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchTerm)
         {
             var events = await _eventService.GetAllEventsAsync();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                searchTerm = searchTerm.ToLower();
+                events = events
+                    .Where(e => e.Title.ToLower().Contains(searchTerm))
+                    .ToList();
+            }
+
+            ViewBag.CurrentFilter = searchTerm;
             return View(events);
         }
+
 
         public async Task<IActionResult> Details(int id)
         {

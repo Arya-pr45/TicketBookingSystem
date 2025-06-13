@@ -40,7 +40,6 @@ namespace TicketBookingWebApp.Application.Services
                 var booking = _mapper.Map<Booking>(bookingDto);
                 booking.BookingDate = DateTime.UtcNow;
 
-                // Optionally validate event exists
                 var eventExists = await _eventRepository.GetEventByIdAsync(booking.EventId);
                 if (eventExists == null) return false;
 

@@ -1,41 +1,41 @@
 ﻿@model IEnumerable<TicketBookingWebApp.Application.DTOs.EventDto>
+
 @{
-    ViewData["Title"] = "Manage Events";
+    ViewData["Title"] = "All Events";
 }
-<div class="container mt-4">
-    <h2>Events</h2>
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>EventTitle</th>
-                <th>Date & Time</th>
-                <th>Venue</th>
-                <th>Type</th>
-                <th>Tickets</th>
-                <th>Book</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var evt in Model)
-            {
-                <tr>
-                    <td>@evt.Title</td>
-                    <td>@evt.EventDateTime.ToString("f")</td>
-                    <td>@evt.VenueId</td>
-                    <td>@(evt.IsSeatBased ? "Seat-Based" : "Quantity-Based")</td>
-                    <td>@evt.TotalTickets</td>
-                    <td>
-                        <form asp-action="BookEvent" asp-controller="Booking" method="get" style="display:inline;">
-                            <input type="hidden" name="id" value="@evt.Id" />
-                          
-                            <button type="submit" class="btn btn-sm btn-warning">Edit</button>
-                        </form>
 
-                        
-                    </td>
-                </tr>
+<h2 class="text-center mb-4">Available Events</h2>
 
-            }
-        </tbody>
-    </table>
+<div class="container mb-4">
+    <form asp-action="Index" method="get" class="row justify-content-center">
+        <div class="col-md-6 d-flex">
+            <input type="text" name="searchTerm" value="@ViewBag.CurrentFilter" class="form-control me-2" placeholder="Search by event title..." />
+            <button type="submit" class="btn btn-outline-primary">Search</button>
+        </div>
+    </form>
 </div>
+
+@if (Model != null && Model.Any())
+{
+    <div class="row">
+        @foreach (var ev in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">@ev.Title</h5>
+                        <p class="card-text">
+                            <strong>Date & Time:</strong> @ev.EventDateTime.ToString("dd MMM yyyy hh:mm tt")<br />
+                            <strong>Type:</strong> @(ev.IsSeatBased ? "Seat-Based" : "General Admission")
+                        </p>
+                        <a asp-action="Details" asp-route-id="@ev.Id" class="btn btn-outline-primary">View Details</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-info text-center">No events found matching your search.</div>
+}

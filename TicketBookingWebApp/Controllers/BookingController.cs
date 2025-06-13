@@ -8,7 +8,7 @@ using TicketBookingWebApp.Application.Services;
 
 namespace TicketBookingWebApp.Web.Controllers
 {
-    [Authorize(Roles = "User")]
+[Authorize(Roles = "User")]
     public class BookingController : Controller
     {
         private readonly IEventService _eventService;

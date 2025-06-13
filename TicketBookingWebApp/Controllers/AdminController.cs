@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace TicketBookingWebApp.Web.Controllers
 {
-    //[Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     public class AdminController : Controller
     {
         private readonly IEventService _eventService;
@@ -21,9 +21,10 @@ namespace TicketBookingWebApp.Web.Controllers
             _venueService = venueService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var events = await _eventService.GetAllEventsAsync();
+            return View(events);
         }
 
         public async Task<IActionResult> CreateEvent()

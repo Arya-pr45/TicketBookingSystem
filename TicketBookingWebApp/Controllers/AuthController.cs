@@ -52,6 +52,7 @@ namespace TicketBookingWebApp.Web.Controllers
         }
 
         [HttpPost]
+        [HttpPost]
         public async Task<IActionResult> Login(LoginDto dto)
         {
             try
@@ -68,7 +69,24 @@ namespace TicketBookingWebApp.Web.Controllers
                     return View(dto);
                 }
 
-                return RedirectToAction("Index", "Event");
+                if (!string.IsNullOrEmpty(result.Token))
+                {
+                    Response.Cookies.Append("AuthToken", result.Token, new CookieOptions
+                    {
+                        HttpOnly = true,
+                        Secure = true, 
+                        Expires = DateTimeOffset.UtcNow.AddHours(1)
+                    });
+                }
+
+                var role = result.Role?.ToLower();
+                if (role == "admin")
+                    return RedirectToAction("Index", "Admin");
+
+                if (role == "user")
+                    return RedirectToAction("Index", "Event");
+
+                return RedirectToAction("Login");
             }
             catch (Exception ex)
             {
@@ -77,10 +95,12 @@ namespace TicketBookingWebApp.Web.Controllers
             }
         }
 
+
         public IActionResult Logout()
         {
             try
             {
+                Response.Cookies.Delete("AuthToken");
                 TempData["Message"] = "You have been logged out.";
                 return RedirectToAction("Login");
             }
@@ -90,5 +110,6 @@ namespace TicketBookingWebApp.Web.Controllers
                 return RedirectToAction("Login");
             }
         }
+
     }
 }
