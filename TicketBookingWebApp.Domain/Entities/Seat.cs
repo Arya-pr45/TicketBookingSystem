@@ -9,11 +9,11 @@ public partial class Seat
 
     public string SeatNumber { get; set; } = null!;
 
-    public int VenueId { get; set; }
-
     public bool IsAvailable { get; set; }
 
-    public virtual ICollection<BookingDetail> BookingDetails { get; set; } = new List<BookingDetail>();
+    public bool IsBooked { get; set; }
 
-    public virtual Venue Venue { get; set; } = null!;
+    public int EventId { get; set; }
+
+    public virtual Event Event { get; set; } = null!;
 }

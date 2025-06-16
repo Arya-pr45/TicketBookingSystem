@@ -19,11 +19,11 @@ namespace TicketBookingWebApp.Application.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly TicketBookingWebAppContext _context;
+        private readonly TicketBookingSystemContext _context;
         private readonly IConfiguration _config;
         private readonly IPasswordHasher<User> _passwordHasher;
 
-        public AuthService(TicketBookingWebAppContext context, IConfiguration config)
+        public AuthService(TicketBookingSystemContext context, IConfiguration config)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
             _config = config ?? throw new ArgumentNullException(nameof(config));
@@ -38,13 +38,11 @@ namespace TicketBookingWebApp.Application.Services
             if (await _context.Users.AnyAsync(u => u.Email == dto.Email))
                 throw new Exception("Email already exists");
 
-            var role = string.IsNullOrEmpty(dto.Role) ? "Admin" : dto.Role;
-
             var user = new User
             {
                 UserName = dto.UserName,
                 Email = dto.Email,
-                Role = role
+                Role = dto.Role
             };
 
             user.PasswordHash = _passwordHasher.HashPassword(user, dto.Password);
@@ -91,6 +89,7 @@ namespace TicketBookingWebApp.Application.Services
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Name, user.UserName),
                 new Claim(ClaimTypes.Role, user.Role)
             };
 

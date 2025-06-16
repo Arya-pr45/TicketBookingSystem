@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TicketBookingWebApp.Application.DTOs;
 using TicketBookingWebApp.Application.Interfaces;
@@ -6,7 +7,7 @@ using TicketBookingWebApp.Application.Services;
 
 namespace TicketBookingWebApp.Web.Controllers
 {
-    //[Authorize(Roles = "User")]
+    [Authorize(Roles = "User")]
     public class EventController : Controller
     {
         private readonly IEventService _eventService;
@@ -18,7 +19,7 @@ namespace TicketBookingWebApp.Web.Controllers
 
         public async Task<IActionResult> Index(string searchTerm)
         {
-            var events = await _eventService.GetAllEventsAsync();
+            var events = await _eventService.GetUpcomingEventsAsync();
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
@@ -33,6 +34,7 @@ namespace TicketBookingWebApp.Web.Controllers
         }
 
 
+
         public async Task<IActionResult> Details(int id)
         {
             var eventDto = await _eventService.GetEventDetailsAsync(id);
@@ -40,62 +42,68 @@ namespace TicketBookingWebApp.Web.Controllers
             return View(eventDto);
         }
 
-        public async Task<IActionResult> BookTicket(int id)
-        {
-            var eventDto = await _eventService.GetEventDetailsAsync(id);
-            if (eventDto == null) return NotFound();
-
-            var model = new EventDto
-            {
-                Id = eventDto.Id,
-                Title = eventDto.Title,
-                IsSeatBased = eventDto.IsSeatBased,
-                AvailableSeatIds = eventDto.AvailableSeatIds,
-                EventDateTime = eventDto.EventDateTime
-            };
-
-            return View(model);
-        }
-
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> BookTicket(BookingDto model)
+        public async Task<IActionResult> BookTicket([FromBody] BookingDto model)
         {
             if (!ModelState.IsValid)
-                return View(model);
+            {
+                return BadRequest("Invalid booking data.");
+            }
 
-            var username = User.Identity?.Name;
-            if (string.IsNullOrEmpty(username)) return Unauthorized();
-
-            BookingDto booking;
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized();
 
             try
             {
-                var eventDetails = await _eventService.GetEventDetailsAsync(model.EventId);
-                if (eventDetails == null) return NotFound();
+                BookingDto booking;
 
-   
-                if (eventDetails.IsSeatBased)
+                if (model.IsSeatBased)
                 {
-                    booking = await _eventService.BookSeatsAsync(model.EventId, eventDetails.AvailableSeatIds ?? new List<int>(), username);
+                    booking = await _eventService.BookSeatsAsync(model.EventId, model.SeatIds, username);
                 }
                 else
                 {
                     booking = await _eventService.BookGeneralTicketsAsync(model.EventId, model.Quantity, username);
                 }
 
-                return RedirectToAction("Confirmation", booking);
+                return Ok(new { bookingId = booking.BookingId });
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", ex.Message);
-                return View(model);
+                return StatusCode(500, new { error = ex.Message });
             }
         }
-
-        public IActionResult Confirmation(BookingDto booking)
+        [HttpGet]
+        public async Task<IActionResult> BookingDetails(int bookingId)
         {
+            var booking = await _eventService.GetBookingByIdAsync(bookingId);
+            if (booking == null)
+                return NotFound();
+
             return View(booking);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CancelBooking(int bookingId)
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized();
+
+            try
+            {
+                await _eventService.CancelBookingAsync(bookingId, username);
+                return Ok(new { message = "Booking cancelled successfully." });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
         public async Task<IActionResult> MyBookings()

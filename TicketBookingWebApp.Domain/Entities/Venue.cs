@@ -13,9 +13,5 @@ public partial class Venue
 
     public int Capacity { get; set; }
 
-    public DateTime? CreatedAt { get; set; }
-
     public virtual ICollection<Event> Events { get; set; } = new List<Event>();
-
-    public virtual ICollection<Seat> Seats { get; set; } = new List<Seat>();
 }

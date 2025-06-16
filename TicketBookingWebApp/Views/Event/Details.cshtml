@@ -2,11 +2,55 @@
 @{
     ViewData["Title"] = "Event Details";
 }
+
 <div class="container mt-4">
     <h2>@Model.Title</h2>
     <p>@Model.Description</p>
     <p><strong>Date:</strong> @Model.EventDateTime.ToString("f")</p>
     <p><strong>Price:</strong> ₹@Model.Price</p>
     <p><strong>Total Tickets:</strong> @Model.TotalTickets</p>
-    <a class="btn btn-success" href="@Url.Action("BookTicket", "Event", new { id = Model.Id })">Book Now</a>
+
+    <form id="bookingForm">
+        <input type="hidden" id="EventId" value="@Model.Id" />
+        <input type="hidden" id="EventTitle" value="@Model.Title" />
+        <input type="hidden" id="EventDateTime" value="@Model.EventDateTime.ToString("yyyy-MM-ddTHH:mm:ss")" />
+        <input type="hidden" id="IsSeatBased" value="@Model.IsSeatBased.ToString().ToLower()" />
+        <input type="hidden" id="SelectedSeatIds" />
+
+        @if (Model.IsSeatBased && Model.Seats != null && Model.Seats.Any())
+        {
+            <h4 class="mt-4">Seat Map</h4>
+            <div class="d-flex flex-wrap gap-2 mb-4">
+                @foreach (var seat in Model.Seats)
+                {
+                    var seatClass = seat.IsBooked ? "btn-danger" : "btn-outline-success";
+                    var disabled = seat.IsBooked ? "disabled" : "";
+                    <button type="button"
+                            class="btn seat-btn @seatClass"
+                            data-seat-id="@seat.Id"
+                    @disabled>
+                        @seat.SeatNumber
+                    </button>
+                }
+            </div>
+        }
+        @if (!Model.IsSeatBased)
+        {
+            <h4 class="mt-4">Select Number of Tickets</h4>
+            <div class="d-flex align-items-center gap-2 mb-4">
+                <button type="button" class="btn btn-outline-secondary" id="decreaseQty">-</button>
+                <input type="text" id="TicketQuantity" value="1" class="form-control text-center" style="width: 60px;" readonly />
+                <input type="hidden" id="Quantity" />
+                <button type="button" class="btn btn-outline-secondary" id="increaseQty">+</button>
+            </div>
+        }
+
+
+        <button type="button" id="submitBooking" class="btn btn-success">Book Now</button>
+    </form>
+
 </div>
+
+@section Scripts {
+    <script src="~/js/event-details.js"></script>
+}

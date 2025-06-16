@@ -9,6 +9,15 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.3.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.6" />
+    <PackageReference Include="Moq" Version="4.20.72" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TicketBookingWebApp.Application\TicketBookingWebApp.Application.csproj" />
+    <ProjectReference Include="..\TicketBookingWebApp.Domain\TicketBookingWebApp.Domain.csproj" />
+    <ProjectReference Include="..\TicketBookingWebApp.Infrastructure\TicketBookingWebApp.Infrastructure.csproj" />
+    <ProjectReference Include="..\TicketBookingWebApp\TicketBookingWebApp.Web.csproj" />
   </ItemGroup>
 
 </Project>

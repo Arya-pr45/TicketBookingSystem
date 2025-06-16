@@ -1,0 +1,50 @@
+﻿@model TicketBookingWebApp.Application.DTOs.BookingDto
+@{
+    ViewData["Title"] = "Booking Details";
+    var qrContent = $"Booking ID: {Model.BookingId}, Event: {Model.EventTitle}, Date: {Model.EventDateTime}, Quantity: {Model.Quantity}";
+}
+
+<div class="container mt-5" id="receipt">
+    <div class="card shadow-sm p-4">
+        <h2 class="text-success mb-4">🎉 Booking Confirmed!</h2>
+
+        <p><strong>Reference ID:</strong> @Model.BookingId</p>
+        <p><strong>Event:</strong> @Model.EventTitle</p>
+        <p><strong>Date & Time:</strong> @Model.EventDateTime.ToString("f")</p>
+        <p><strong>Tickets Booked:</strong> @Model.Quantity</p>
+
+        @if (Model.IsSeatBased && Model.SeatIds != null && Model.SeatIds.Any())
+        {
+            <p><strong>Seats:</strong> @string.Join(", ", Model.SeatIds)</p>
+        }
+
+        <p><strong>Booking Date:</strong> @Model.BookingDate.ToString("f")</p>
+
+        <div class="mt-4">
+            <canvas id="qr-code"></canvas>
+        </div>
+
+        <div class="mt-4">
+            <button class="btn btn-outline-primary" onclick="printReceipt()">🖨️ Print</button>
+            <a class="btn btn-outline-secondary" href="@Url.Action("Index", "Event")">Back to Events</a>
+            <a class="btn btn-outline-dark" href="@Url.Action("MyBookings", "Event")">My Bookings</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    const qr = new QRious({
+        element: document.getElementById('qr-code'),
+        value: '@qrContent',
+        size: 200
+    });
+
+    function printReceipt() {
+        const original = document.body.innerHTML;
+        const receipt = document.getElementById('receipt').innerHTML;
+        document.body.innerHTML = receipt;
+        window.print();
+        document.body.innerHTML = original;
+        location.reload();
+    }
+</script>

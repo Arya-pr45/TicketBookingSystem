@@ -1,4 +1,5 @@
-﻿using TicketBookingWebApp.Domain.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using TicketBookingWebApp.Domain.Entities;
 
 public interface IBookingRepository
 {
@@ -9,4 +10,10 @@ public interface IBookingRepository
     Task<Booking?> GetByIdAsync(int bookingId);
     Task DeleteAsync(int bookingId);
     Task AddAsync(Booking booking);
+    Task<List<Seat>> GetAvailableSeatsWithRowVersionAsync(List<int> seatIds);
+    Task UpdateSeatsAsync(List<Seat> seats);
+    DbContext GetDbContext();
+    Task<int> GetUserIdByUsernameAsync(string username);
+    Task<Booking?> GetBookingByIdAsync(int bookingId);
+    void Delete(Booking booking);
 }

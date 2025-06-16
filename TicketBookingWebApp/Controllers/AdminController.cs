@@ -6,6 +6,7 @@ using TicketBookingWebApp.Application.DTOs;
 using TicketBookingWebApp.Application.Interfaces;
 using TicketBookingWebApp.Application.Services;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using TicketBookingWebApp.Domain.Entities;
 
 namespace TicketBookingWebApp.Web.Controllers
 {
@@ -41,15 +42,40 @@ namespace TicketBookingWebApp.Web.Controllers
             if (!ModelState.IsValid)
             {
                 var venues = await _venueService.GetAllVenuesAsync();
-                List<SelectListItem> selectListItems = venues.Select(item => new SelectListItem() { Text = item.Name, Value = item.Id.ToString() }).ToList();
+                List<SelectListItem> selectListItems = venues.Select(item => new SelectListItem()
+                {
+                    Text = item.Name,
+                    Value = item.Id.ToString()
+                }).ToList();
                 ViewBag.Venues = selectListItems;
-                return View(dto);
-            }
+                dto.AvailableTickets = dto.TotalTickets;
+                var eventId = await _eventService.CreateEventAsync(dto);
 
-            await _eventService.CreateEventAsync(dto);
+                if (dto.IsSeatBased && dto.TotalTickets > 0)
+                {
+                    var seats = new List<Seat>();
+                    for (int i = 1; i <= dto.TotalTickets; i++)
+                    {
+                        seats.Add(new Seat
+                        {
+                            SeatNumber = $"S{i}",
+                            IsAvailable = true,
+                            IsBooked = false,
+                            EventId = eventId,
+                            //RowVersion = new byte[8] // Placeholder; your DB may auto-handle this
+                        });
+                    }
+
+                    await _eventService.AddSeatsAsync(seats);
+                    return RedirectToAction("Index",dto);
+                }
+ 
+            }
             return RedirectToAction("Index");
+            
         }
 
+        [HttpGet]
         public async Task<IActionResult> EditEvent(int id)
         {
             var eventDto = await _eventService.GetEventByIdAsync(id);
@@ -85,7 +111,7 @@ namespace TicketBookingWebApp.Web.Controllers
             var venues = await _venueService.GetAllVenuesAsync();
             return View(venues);
         }
-
+        [HttpGet]
         public async Task<IActionResult> AddVenue() => View();
 
         [HttpPost]

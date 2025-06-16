@@ -20,7 +20,7 @@
             <tr>
                 <th>Title</th>
                 <th>Date & Time</th>
-                <th>Venue</th>
+                <th>VenueName</th>
                 <th>Type</th>
                 <th>Tickets</th>
                 <th style="width: 180px;">Actions</th>
@@ -33,11 +33,12 @@
                     <td>@evt.Title</td>
                     <td>@evt.EventDateTime.ToString("f")</td>
                     <td>
-                        @evt.Venue?.Name ?? "N/A"
+                        @evt.Venue?.Name
                         <br />
-                        <small class="text-muted">@evt.Venue?.Location</small>
+                        <small class="text-muted">@evt.Venue?.Address</small>
                     </td>
-                    <td>@(evt.IsSeatBased ? "Seat-Based" : "Quantity-Based")</td>
+
+                    <td>@(evt.IsSeatBased ? "Seat-Based" : "General-Admission")</td>
                     <td>@evt.TotalTickets</td>
                     <td>
                         <form asp-action="EditEvent" asp-controller="Admin" method="get" class="d-inline">

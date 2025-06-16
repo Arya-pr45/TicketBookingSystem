@@ -18,6 +18,7 @@
                     <th>Type</th>
                     <th>Seats</th>
                     <th>Quantity</th>
+                    <th>BookingDate</th>
                 </tr>
             </thead>
             <tbody>
@@ -25,10 +26,14 @@
                 {
                     <tr>
                         <td>@booking.EventTitle</td>
-                        <td>@booking.EventDateTime.ToString("f")</td>
+                        <td>
+                            @booking.EventDateTime.ToString("f")
+                            (@(booking.EventDateTime < DateTime.Now ? "Past Event" : "Upcoming Event"))
+                        </td>
                         <td>@(booking.IsSeatBased ? "Seat Based" : "General")</td>
                         <td>@(booking.IsSeatBased ? string.Join(", ", booking.SeatIds) : "N/A")</td>
                         <td>@booking.Quantity</td>
+                        <td>@booking.BookingDate</td>
                     </tr>
                 }
             </tbody>

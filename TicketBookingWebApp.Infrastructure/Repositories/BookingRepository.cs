@@ -3,12 +3,40 @@ using TicketBookingWebApp.Domain.Entities;
 
 public class BookingRepository : IBookingRepository
 {
-    private readonly TicketBookingWebAppContext _context;
+    private readonly TicketBookingSystemContext _context;
+    private readonly DbSet<Seat> _seats;
+    private readonly DbSet<User> _users;
 
-    public BookingRepository(TicketBookingWebAppContext context)
+    public BookingRepository(TicketBookingSystemContext context)
     {
         _context = context;
+        _seats = context.Set<Seat>();
+        _users = context.Set<User>();
     }
+
+    public DbContext GetDbContext() => _context;
+
+    public async Task<int> GetUserIdByUsernameAsync(string username)
+    {
+        var user = await _users.FirstOrDefaultAsync(u => u.UserName == username);
+        return user?.Id ?? 0;
+    }
+
+    public async Task<List<Seat>> GetAvailableSeatsWithRowVersionAsync(List<int> seatIds)
+    {
+        return await _seats
+            .Where(s => seatIds.Contains(s.Id) && !s.IsBooked)
+            .AsTracking()
+            .ToListAsync();
+    }
+
+    public async Task UpdateSeatsAsync(List<Seat> seats)
+    {
+        _seats.UpdateRange(seats);
+        await _context.SaveChangesAsync();
+    }
+
+
 
     public async Task<Booking> CreateBookingAsync(Booking booking)
     {
@@ -33,11 +61,11 @@ public class BookingRepository : IBookingRepository
     public async Task<IEnumerable<Booking>> GetByUserIdAsync(int userId)
     {
         return await _context.Bookings
-            .Include(b => b.BookingDetails)
-            .Include(b => b.Event)
+            .Include(b => b.Event) 
             .Where(b => b.UserId == userId)
             .ToListAsync();
     }
+
     public async Task<IEnumerable<Booking>> GetBookingsByUserIdAsync(int userId)
     {
         return await _context.Bookings
@@ -50,7 +78,7 @@ public class BookingRepository : IBookingRepository
     {
         return await _context.Bookings
             .Include(b => b.Event)
-            .FirstOrDefaultAsync(b => b.Id == bookingId);
+            .FirstOrDefaultAsync(b => b.BookingId == bookingId);
     }
     public async Task DeleteAsync(int bookingId)
     {
@@ -61,4 +89,17 @@ public class BookingRepository : IBookingRepository
             await _context.SaveChangesAsync();
         }
     }
+    public void Delete(Booking booking)
+    {
+        _context.Bookings.Remove(booking);
+    }
+
+    public async Task<Booking?> GetBookingByIdAsync(int bookingId)
+    {
+        return await _context.Bookings
+                             .Include(b => b.Event)
+                             .Include(b => b.User)
+                             .FirstOrDefaultAsync(b => b.BookingId == bookingId);
+    }
+
 }

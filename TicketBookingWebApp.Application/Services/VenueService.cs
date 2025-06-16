@@ -2,7 +2,7 @@
 using TicketBookingWebApp.Application.DTOs;
 using TicketBookingWebApp.Application.Interfaces;
 using TicketBookingWebApp.Domain.Entities;
-using TicketBookingWebApp.Infrastructure.Interfaces;
+using TicketBookingWebApp.Application.Interfaces;
 
 namespace TicketBookingWebApp.Application.Services
 {

@@ -14,11 +14,16 @@ namespace TicketBookingWebApp.Application.Interfaces
 
         Task<BookingDto> BookSeatsAsync(int eventId, List<int> seatIds, string username);
         Task<BookingDto> BookGeneralTicketsAsync(int eventId, int quantity, string username);
+        Task<BookingDto?> GetBookingByIdAsync(int bookingId);
 
         Task<IEnumerable<BookingDto>> GetMyBookingsAsync(string username);
-        Task CreateEventAsync(EventDto dto);
+        Task<int> CreateEventAsync(EventDto dto);
         Task<EventDto?> GetEventByIdAsync(int id);
         Task UpdateEventAsync(EventDto dto);
         Task DeleteEventAsync(int id);
+        Task<IEnumerable<EventDto>> GetUpcomingEventsAsync();
+        Task AddSeatsAsync(List<Seat> seats);
+        Task CancelBookingAsync(int bookingId, string username);
+
     }
 }

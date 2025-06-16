@@ -13,9 +13,11 @@ public partial class User
 
     public string PasswordHash { get; set; } = null!;
 
-    public string Role { get; set; } = null!;
-
     public DateTime? CreatedAt { get; set; }
+
+    public int RoleId { get; set; }
+
+    public string Role { get; set; } = null!;
 
     public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 }

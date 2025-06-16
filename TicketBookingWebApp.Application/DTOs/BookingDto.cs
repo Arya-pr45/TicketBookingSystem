@@ -12,9 +12,9 @@ namespace TicketBookingWebApp.Application.DTOs
         public DateTime EventDateTime { get; set; }
 
         public bool IsSeatBased { get; set; }           
-        public int Quantity { get; set; }            
+        public int Quantity { get; set; }
+        public DateTime BookingDate { get; set; }
 
         public List<int> SeatIds { get; set; } = new();  
-        public List<int> AvailableSeatIds { get; set; } = new(); 
     }
 }

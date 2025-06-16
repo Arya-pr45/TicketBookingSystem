@@ -1,4 +1,4 @@
-﻿@model TicketBookingWebApp.Domain.Entities.BookingDetail
+﻿@model TicketBookingWebApp.Domain.Entities.Booking
 
 @{
     ViewData["Title"] = "BookEvent";
@@ -12,24 +12,23 @@
     <div class="col-md-4">
         <form asp-action="BookEvent">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
             <div class="form-group">
                 <label asp-for="BookingId" class="control-label"></label>
-                <select asp-for="BookingId" class ="form-control" asp-items="ViewBag.BookingId"></select>
+                <select asp-for="BookingId" class="form-control" asp-items="ViewBag.BookingId"></select>
             </div>
+
             <div class="form-group">
-                <label asp-for="SeatId" class="control-label"></label>
-                <select asp-for="SeatId" class ="form-control" asp-items="ViewBag.SeatId"></select>
+                <label asp-for="SeatIds" class="control-label"></label>
+                <select asp-for="SeatIds" class="form-control" asp-items="ViewBag.SeatId"></select>
             </div>
+
             <div class="form-group">
                 <label asp-for="Quantity" class="control-label"></label>
                 <input asp-for="Quantity" class="form-control" />
                 <span asp-validation-for="Quantity" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="TicketType" class="control-label"></label>
-                <input asp-for="TicketType" class="form-control" />
-                <span asp-validation-for="TicketType" class="text-danger"></span>
-            </div>
+
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
@@ -42,5 +41,7 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

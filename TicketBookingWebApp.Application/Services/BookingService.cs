@@ -1,5 +1,8 @@
-﻿using AutoMapper;
+﻿using System.Data;
+using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using TicketBookingWebApp.Application.DTOs;
+using TicketBookingWebApp.Application.Exceptions;
 using TicketBookingWebApp.Application.Interfaces;
 using TicketBookingWebApp.Domain.Entities;
 
@@ -35,22 +38,67 @@ namespace TicketBookingWebApp.Application.Services
 
         public async Task<bool> CreateBookingAsync(BookingDto bookingDto)
         {
+            var dbContext = _bookingRepository.GetDbContext();
+
+            await using var transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
             try
             {
-                var booking = _mapper.Map<Booking>(bookingDto);
-                booking.BookingDate = DateTime.UtcNow;
+                var eventEntity = await _eventRepository.GetEventByIdAsync(bookingDto.EventId);
+                if (eventEntity == null)
+                    return false;
 
-                var eventExists = await _eventRepository.GetEventByIdAsync(booking.EventId);
-                if (eventExists == null) return false;
+                var userId = await _bookingRepository.GetUserIdByUsernameAsync(bookingDto.Username);
+                if (userId == 0)
+                    throw new InvalidOperationException("User not found");
+
+                var booking = new Booking
+                {
+                    EventId = bookingDto.EventId,
+                    UserId = userId,
+                    Username = bookingDto.Username,
+                    EventTitle = eventEntity.Title,
+                    EventDateTime = eventEntity.EventDateTime,
+                    IsSeatBased = bookingDto.IsSeatBased,
+                    Quantity = bookingDto.Quantity,
+                    BookingDate = DateTime.UtcNow,
+                    SeatIds = bookingDto.IsSeatBased
+                        ? string.Join(",", bookingDto.SeatIds)
+                        : null
+                };
+
+                if (bookingDto.IsSeatBased)
+                {
+                    var seats = await _bookingRepository.GetAvailableSeatsWithRowVersionAsync(bookingDto.SeatIds);
+                    if (seats.Count != bookingDto.SeatIds.Count)
+                        throw new ConcurrencyException("Some selected seats are no longer available.");
+
+                    foreach (var seat in seats)
+                    {
+                        seat.IsBooked = true;
+                    }
+
+                    await _bookingRepository.UpdateSeatsAsync(seats);
+                }
 
                 await _bookingRepository.AddAsync(booking);
+                await transaction.CommitAsync();
+
                 return true;
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                await transaction.RollbackAsync();
+                throw new ConcurrencyException("Booking failed due to concurrent seat updates.");
             }
             catch
             {
-                return false;
+                await transaction.RollbackAsync();
+                throw;
             }
         }
+
+
+
 
         public async Task<bool> CancelBookingAsync(int bookingId)
         {

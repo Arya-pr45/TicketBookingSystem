@@ -6,9 +6,9 @@ namespace TicketBookingWebApp.Infrastructure.Repositories
 {
     public class VenueRepository : IVenueRepository
     {
-        private readonly TicketBookingWebAppContext _context;
+        private readonly TicketBookingSystemContext _context;
 
-        public VenueRepository(TicketBookingWebAppContext context)
+        public VenueRepository(TicketBookingSystemContext context)
         {
             _context = context;
         }

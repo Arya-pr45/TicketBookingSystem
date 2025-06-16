@@ -37,7 +37,7 @@ namespace TicketBookingWebApp.Web.Controllers
             {
                 Id = dto.Id,
                 Name = dto.Name,
-                Address = dto.Location,
+                Address = dto.Address,
                 Capacity = dto.Capacity
             };
 
@@ -55,7 +55,7 @@ namespace TicketBookingWebApp.Web.Controllers
             {
                 Id = dto.Id,
                 Name = dto.Name,
-                Address = dto.Location,
+                Address = dto.Address,
                 Capacity = dto.Capacity
             };
 

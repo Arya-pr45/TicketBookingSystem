@@ -3,9 +3,9 @@ using TicketBookingWebApp.Domain.Entities;
 
 public class UserRepository : IUserRepository
 {
-    private readonly TicketBookingWebAppContext _context;
+    private readonly TicketBookingSystemContext _context;
 
-    public UserRepository(TicketBookingWebAppContext context)
+    public UserRepository(TicketBookingSystemContext context)
     {
         _context = context;
     }

@@ -26,7 +26,7 @@ namespace TicketBookingWebApp.Web.Controllers
             {
                 if (!ModelState.IsValid)
                     return View(dto);
-
+                dto.Role = "User";
                 var result = await _authService.RegisterAsync(dto);
 
                 if (!result.Success)
@@ -50,8 +50,6 @@ namespace TicketBookingWebApp.Web.Controllers
         {
             return View();
         }
-
-        [HttpPost]
         [HttpPost]
         public async Task<IActionResult> Login(LoginDto dto)
         {
@@ -74,7 +72,7 @@ namespace TicketBookingWebApp.Web.Controllers
                     Response.Cookies.Append("AuthToken", result.Token, new CookieOptions
                     {
                         HttpOnly = true,
-                        Secure = true, 
+                        Secure = true,
                         Expires = DateTimeOffset.UtcNow.AddHours(1)
                     });
                 }

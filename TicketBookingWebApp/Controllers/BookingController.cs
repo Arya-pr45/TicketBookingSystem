@@ -8,7 +8,7 @@ using TicketBookingWebApp.Application.Services;
 
 namespace TicketBookingWebApp.Web.Controllers
 {
-[Authorize(Roles = "User")]
+    [Authorize(Roles = "User")]
     public class BookingController : Controller
     {
         private readonly IEventService _eventService;
@@ -38,7 +38,7 @@ namespace TicketBookingWebApp.Web.Controllers
             if (!ModelState.IsValid)
                 return View(dto);
 
-            var userId = User.FindFirstValue(ClaimTypes.Name); 
+            var userId = User.FindFirstValue(ClaimTypes.Name);
             dto.Username = userId;
 
             await _bookingService.CreateBookingAsync(dto);
