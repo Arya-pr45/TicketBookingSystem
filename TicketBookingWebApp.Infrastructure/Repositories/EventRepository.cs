@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using TicketBookingWebApp.Domain.Entities;
+using TicketBookingWebApp.Domain.Enums;
 
 public class EventRepository : IEventRepository
 {
@@ -84,6 +85,12 @@ public class EventRepository : IEventRepository
 
             await _context.SaveChangesAsync();
         }
+    }
+    public async Task<IEnumerable<Event>> GetUpcomingEventsByTypeAsync(int type)
+    {
+        return await _context.Events
+            .Where(e => e.EventDateTime > DateTime.UtcNow && e.EventType == type)
+            .ToListAsync();
     }
 
 

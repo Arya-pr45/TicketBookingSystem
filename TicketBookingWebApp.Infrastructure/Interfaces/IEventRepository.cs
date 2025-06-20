@@ -1,4 +1,5 @@
 ﻿using TicketBookingWebApp.Domain.Entities;
+using TicketBookingWebApp.Domain.Enums;
 
 public interface IEventRepository
 {
@@ -14,4 +15,5 @@ public interface IEventRepository
     Task<List<Seat>> GetSeatsByEventIdAsync(int eventId);
     Task<List<Seat>> GetSeatsByIdsAsync(List<int> seatIds);
     Task UpdateSeatsAsync(List<Seat> seats);
+    Task<IEnumerable<Event>> GetUpcomingEventsByTypeAsync(int type);
 }

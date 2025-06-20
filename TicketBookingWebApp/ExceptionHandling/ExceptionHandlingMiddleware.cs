@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.Json;
+using TicketBookingWebApp.Application.Exceptions;
 
 public class ExceptionHandlingMiddleware
 {
@@ -29,12 +30,38 @@ public class ExceptionHandlingMiddleware
 
     private Task HandleExceptionAsync(HttpContext context, Exception exception)
     {
-        var code = HttpStatusCode.InternalServerError;
+        HttpStatusCode statusCode;
+        string message = exception.Message;
 
-        var result = JsonSerializer.Serialize(new { error = exception.Message });
+        switch (exception)
+        {
+            case BookingConflictException:
+                statusCode = HttpStatusCode.Conflict;
+                break;
+            case SeatUnavailableException:
+                statusCode = HttpStatusCode.Conflict;
+                break;
+            case EventNotFoundException:
+                statusCode = HttpStatusCode.NotFound;
+                break;
+            case UnauthorizedAccessException:
+                statusCode = HttpStatusCode.Unauthorized;
+                break;
+            default:
+                statusCode = HttpStatusCode.InternalServerError;
+                break;
+        }
+
+        var response = new
+        {
+            error = message,
+            status = (int)statusCode
+        };
+
         context.Response.ContentType = "application/json";
-        context.Response.StatusCode = (int)code;
+        context.Response.StatusCode = (int)statusCode;
 
-        return context.Response.WriteAsync(result);
+        return context.Response.WriteAsync(JsonSerializer.Serialize(response));
     }
+
 }

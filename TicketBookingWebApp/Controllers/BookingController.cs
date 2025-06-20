@@ -19,7 +19,6 @@ namespace TicketBookingWebApp.Web.Controllers
             _eventService = eventService;
             _bookingService = bookingService;
         }
-
         public async Task<IActionResult> Index()
         {
             var events = await _eventService.GetAllEventsAsync();

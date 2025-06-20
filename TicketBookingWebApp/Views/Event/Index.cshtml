@@ -1,34 +1,95 @@
-﻿@model IEnumerable<TicketBookingWebApp.Application.DTOs.EventDto>
+﻿@using TicketBookingWebApp.Domain.Enums
+@model IEnumerable<TicketBookingWebApp.Application.DTOs.EventDto>
 
 @{
-    ViewData["Title"] = "All Events";
+    ViewData["Title"] = "Events";
+    var userName = User.Identity?.IsAuthenticated == true ? User.Identity.Name : "Guest";
+
+    // Instead of casting from ViewBag, get event types from Enum directly here
+    var eventTypes = Enum.GetValues(typeof(EventType)).Cast<EventType>();
+
+    // Get the selected type from ViewBag, or fallback to null
+    int? selectedType = ViewBag.SelectedType as int?;
 }
 
-<h2 class="text-center mb-4">Available Events</h2>
+<style>
+    /* Your existing styles */
+</style>
 
-<div class="container mb-4">
-    <form asp-action="Index" method="get" class="row justify-content-center">
-        <div class="col-md-6 d-flex">
-            <input type="text" name="searchTerm" value="@ViewBag.CurrentFilter" class="form-control me-2" placeholder="Search by event title..." />
-            <button type="submit" class="btn btn-outline-primary">Search</button>
-        </div>
-    </form>
+<div class="text-center mb-4">
+    <h2 class="text-gradient">Welcome, @userName!</h2>
+    <p class="text-muted font-weight-700">Browse and book your favorite events</p>
+</div>
+
+<div class="row justify-content-center mb-4">
+    <div class="col-md-4">
+        <form method="get" asp-action="Index" class="d-flex align-items-center">
+            <select name="eventType" class="form-select me-2">
+                <option value="">All Event Types</option>
+                @foreach (var type in eventTypes)
+                {
+                    var typeValue = (int)type;
+                    if (selectedType == typeValue)
+                    {
+                        <option value="@typeValue" selected>@type.ToString()</option>
+                    }
+                    else
+                    {
+                        <option value="@typeValue">@type.ToString()</option>
+                    }
+                }
+            </select>
+
+
+            <input type="text" name="searchTerm" class="form-control me-2" placeholder="Search..."
+                   value="@(ViewBag.CurrentFilter ?? "")" />
+
+            <button type="submit" class="btn btn-gradient px-3">Filter</button>
+        </form>
+    </div>
 </div>
 
 @if (Model != null && Model.Any())
 {
-    <div class="row">
+    <div id="eventContainer" class="row row-cols-1 row-cols-md-3 g-4">
         @foreach (var ev in Model)
         {
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">@ev.Title</h5>
-                        <p class="card-text">
-                            <strong>Date & Time:</strong> @ev.EventDateTime.ToString("dd MMM yyyy hh:mm tt")<br />
-                            <strong>Type:</strong> @(ev.IsSeatBased ? "Seat-Based" : "General Admission")
+            <div class="col animate__animated animate__fadeInUp">
+                <div class="card event-card h-100 shadow-sm border-0">
+                    @if (!string.IsNullOrEmpty(ev.ImageUrl))
+                    {
+                        <img src="@ev.ImageUrl"
+                             class="card-img-top img-fluid animate__animated animate__zoomIn"
+                             alt="Event Image"
+                             style="height: 200px; object-fit: cover;" />
+                    }
+                    else
+                    {
+                        <div class="bg-secondary text-white d-flex align-items-center justify-content-center"
+                             style="height: 200px;">
+                            No Image
+                        </div>
+                    }
+
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title fw-semibold text-dark">@ev.Title</h5>
+
+                        <p class="event-date mb-2 text-muted">
+                            <i class="bi bi-calendar-event"></i>
+                            @ev.EventDateTime.ToString("dd MMM yyyy hh:mm tt")
                         </p>
-                        <a asp-action="Details" asp-route-id="@ev.Id" class="btn btn-outline-primary">View Details</a>
+
+                        <span class="badge bg-info text-dark mb-2">
+                            @(ev.IsSeatBased ? "Seat-Based" : "General Admission")
+                        </span>
+
+                        <span class="badge badge-style mb-3">@ev.Type</span>
+
+                        <div class="mt-auto">
+                            <a asp-action="Details" asp-route-id="@ev.Id" class="btn btn-view-details w-100">
+                                View Details
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -37,5 +98,5 @@
 }
 else
 {
-    <div class="alert alert-info text-center">No events found matching your search.</div>
+    <div class="alert alert-warning text-center mt-5">No events found. Try another search!</div>
 }

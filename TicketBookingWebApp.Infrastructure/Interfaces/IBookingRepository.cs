@@ -16,4 +16,5 @@ public interface IBookingRepository
     Task<int> GetUserIdByUsernameAsync(string username);
     Task<Booking?> GetBookingByIdAsync(int bookingId);
     void Delete(Booking booking);
+
 }

@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace TicketBookingWebApp.Application.Exceptions
 {
-    class SeatUnavailableException
+    public class SeatUnavailableException : Exception
     {
+        public SeatUnavailableException(string message) : base(message) { }
     }
 }

@@ -1,56 +1,125 @@
 ﻿@model TicketBookingWebApp.Application.DTOs.EventDto
+
 @{
     ViewData["Title"] = "Event Details";
 }
 
-<div class="container mt-4">
-    <h2>@Model.Title</h2>
-    <p>@Model.Description</p>
-    <p><strong>Date:</strong> @Model.EventDateTime.ToString("f")</p>
-    <p><strong>Price:</strong> ₹@Model.Price</p>
-    <p><strong>Total Tickets:</strong> @Model.TotalTickets</p>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet" />
 
-    <form id="bookingForm">
-        <input type="hidden" id="EventId" value="@Model.Id" />
-        <input type="hidden" id="EventTitle" value="@Model.Title" />
-        <input type="hidden" id="EventDateTime" value="@Model.EventDateTime.ToString("yyyy-MM-ddTHH:mm:ss")" />
-        <input type="hidden" id="IsSeatBased" value="@Model.IsSeatBased.ToString().ToLower()" />
-        <input type="hidden" id="SelectedSeatIds" />
+<style>
+    .event-detail-container {
+        background-color: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+        padding: 30px;
+        margin-top: 30px;
+    }
 
-        @if (Model.IsSeatBased && Model.Seats != null && Model.Seats.Any())
-        {
-            <h4 class="mt-4">Seat Map</h4>
-            <div class="d-flex flex-wrap gap-2 mb-4">
-                @foreach (var seat in Model.Seats)
-                {
-                    var seatClass = seat.IsBooked ? "btn-danger" : "btn-outline-success";
-                    var disabled = seat.IsBooked ? "disabled" : "";
-                    <button type="button"
-                            class="btn seat-btn @seatClass"
-                            data-seat-id="@seat.Id"
-                    @disabled>
-                        @seat.SeatNumber
-                    </button>
-                }
-            </div>
+    .toggle-btn {
+        border-radius: 30px;
+        font-weight: 600;
+    }
+
+    .seat-map-box {
+        display: none;
+        transition: all 0.3s ease-in-out;
+        padding: 20px;
+        background-color: #f8f9fa;
+        border-radius: 12px;
+        margin-top: 20px;
+    }
+
+    .seat-btn {
+        min-width: 50px;
+        height: 50px;
+        font-size: 0.85rem;
+        border-radius: 8px;
+    }
+
+        .seat-btn:hover:not(:disabled) {
+            transform: scale(1.05);
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
         }
-        @if (!Model.IsSeatBased)
+</style>
+
+<div class="container">
+    <div class="event-detail-container">
+        <h2 class="text-primary">@Model.Title</h2>
+
+        @if (!string.IsNullOrEmpty(Model.ImageUrl))
         {
-            <h4 class="mt-4">Select Number of Tickets</h4>
-            <div class="d-flex align-items-center gap-2 mb-4">
-                <button type="button" class="btn btn-outline-secondary" id="decreaseQty">-</button>
-                <input type="text" id="TicketQuantity" value="1" class="form-control text-center" style="width: 60px;" readonly />
-                <input type="hidden" id="Quantity" />
-                <button type="button" class="btn btn-outline-secondary" id="increaseQty">+</button>
-            </div>
+            <img src="@Model.ImageUrl" alt="Event Image" class="img-fluid my-3 rounded" style="max-height: 300px; object-fit: cover;" />
         }
 
+        <p>@Model.Description</p>
+        <p><strong>Date:</strong> @Model.EventDateTime.ToString("f")</p>
+        <p><strong>Price:</strong> ₹@Model.Price</p>
+        <p><strong>Total Tickets:</strong> @Model.TotalTickets</p>
 
-        <button type="button" id="submitBooking" class="btn btn-success">Book Now</button>
-    </form>
+        <form id="bookingForm">
+            <input type="hidden" id="EventId" value="@Model.Id" />
+            <input type="hidden" id="EventTitle" value="@Model.Title" />
+            <input type="hidden" id="EventDateTime" value="@Model.EventDateTime.ToString("yyyy-MM-ddTHH:mm:ss")" />
+            <input type="hidden" id="IsSeatBased" value="@Model.IsSeatBased.ToString().ToLower()" />
+            <input type="hidden" id="SelectedSeatIds" />
 
+            @if (Model.IsSeatBased && Model.Seats != null && Model.Seats.Any())
+            {
+                <!-- There is a Toggle Button for getting redirected to seat map-->
+                <button type="button" class="btn btn-outline-primary toggle-btn" id="toggleSeatMap">
+                    View Seat Map
+                </button>
+
+                <!-- Hidden Seat Map -->
+                <div id="seatMapBox" class="seat-map-box animate__animated">
+                    <h5 class="mb-3">Select Your Seats</h5>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        @foreach (var seat in Model.Seats)
+                        {
+                            var seatClass = seat.IsBooked ? "btn-danger" : "btn-outline-success";
+                            var disabled = seat.IsBooked ? "disabled" : "";
+                            <button type="button"
+                                    class="btn seat-btn @seatClass"
+                                    data-seat-id="@seat.Id"
+                            @disabled>
+                                @seat.SeatNumber
+                            </button>
+                        }
+                    </div>
+                </div>
+            }
+            @if (!Model.IsSeatBased)
+            {
+                <h4 class="mt-4">Select Number of Tickets</h4>
+                <div class="d-flex align-items-center gap-2 mb-4">
+                    <button type="button" class="btn btn-outline-secondary" id="decreaseQty">-</button>
+                    <input type="text" id="TicketQuantity" value="1" class="form-control text-center" style="width: 60px;" readonly />
+                    <input type="hidden" id="Quantity" />
+                    <button type="button" class="btn btn-outline-secondary" id="increaseQty">+</button>
+                </div>
+            }
+
+            <button type="button" id="submitBooking" class="btn btn-success btn-lg mt-3 px-4">
+                Book Now
+            </button>
+        </form>
+    </div>
 </div>
 
 @section Scripts {
     <script src="~/js/event-details.js"></script>
+
+    <script>
+        document.getElementById("toggleSeatMap")?.addEventListener("click", function () {
+            const seatBox = document.getElementById("seatMapBox");
+            if (seatBox.style.display === "none" || seatBox.style.display === "") {
+                seatBox.style.display = "block";
+                seatBox.classList.add("animate__fadeIn");
+            } else {
+                seatBox.style.display = "none";
+                seatBox.classList.remove("animate__fadeIn");
+            }
+        });
+    </script>
 }

@@ -96,10 +96,6 @@ namespace TicketBookingWebApp.Application.Services
                 throw;
             }
         }
-
-
-
-
         public async Task<bool> CancelBookingAsync(int bookingId)
         {
             try

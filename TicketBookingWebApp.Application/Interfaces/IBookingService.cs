@@ -9,5 +9,6 @@ namespace TicketBookingWebApp.Application.Interfaces
         Task<BookingDto?> GetBookingByIdAsync(int bookingId);
         Task<bool> CreateBookingAsync(BookingDto bookingDto);
         Task<bool> CancelBookingAsync(int bookingId);
+        //Task SendBookingConfirmationEmail(BookingDto bookingDto);
     }
 }

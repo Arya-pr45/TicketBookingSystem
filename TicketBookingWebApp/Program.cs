@@ -10,6 +10,8 @@ using TicketBookingWebApp.Application.Services;
 using TicketBookingWebApp.Infrastructure.Repositories;
 using TicketBookingWebApp.Application.Mapping;
 using System.Security.Claims;
+using Serilog;
+using TicketBookingWebApp.Application.DTOs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,8 +44,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
-
-
+builder.Services.Configure<SmtpDto>(builder.Configuration.GetSection("Smtp"));
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IVenueRepository, VenueRepository>();
 builder.Services.AddScoped<IVenueService, VenueService>();
@@ -52,6 +53,13 @@ builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.File("Logs/log.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 var app = builder.Build();
 

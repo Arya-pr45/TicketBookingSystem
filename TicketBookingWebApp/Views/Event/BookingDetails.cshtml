@@ -1,4 +1,5 @@
 ﻿@model TicketBookingWebApp.Application.DTOs.BookingDto
+
 @{
     ViewData["Title"] = "Booking Details";
     var qrContent = $"Booking ID: {Model.BookingId}, Event: {Model.EventTitle}, Date: {Model.EventDateTime}, Quantity: {Model.Quantity}";
@@ -7,8 +8,8 @@
 <div class="container mt-5" id="receipt">
     <div class="card shadow-sm p-4">
         <h2 class="text-success mb-4">🎉 Booking Confirmed!</h2>
-
-        <p><strong>Reference ID:</strong> @Model.BookingId</p>
+        <p><strong>Reference Number:</strong>@Model.ReferenceNumber</p>
+        <p><strong>BookingId ID:</strong> @Model.BookingId</p>
         <p><strong>Event:</strong> @Model.EventTitle</p>
         <p><strong>Date & Time:</strong> @Model.EventDateTime.ToString("f")</p>
         <p><strong>Tickets Booked:</strong> @Model.Quantity</p>
@@ -19,7 +20,13 @@
         }
 
         <p><strong>Booking Date:</strong> @Model.BookingDate.ToString("f")</p>
+        <p><strong>Status:</strong> Confirmed</p>
 
+        <div class="alert alert-info mt-4">
+            <strong>Confirmation Email:</strong> A confirmation email has been sent to your registered email address.
+        </div>
+
+        <!-- QR Code will be generated here -->
         <div class="mt-4">
             <canvas id="qr-code"></canvas>
         </div>

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using TicketBookingWebApp.Application.DTOs;
 using TicketBookingWebApp.Application.Interfaces;
 using TicketBookingWebApp.Domain.Entities;
+using TicketBookingWebApp.Domain.Enums;
 
 public class EventService : IEventService
 {
@@ -11,7 +12,8 @@ public class EventService : IEventService
     private readonly IUserRepository _userRepository;
     private readonly IMapper _mapper;
     private readonly ILogger<EventService> _logger;
-    private readonly TicketBookingSystemContext _context; // Inject DbContext
+    private readonly IEmailService _emailService;
+    private readonly TicketBookingSystemContext _context;
 
     public EventService(
         IEventRepository eventRepository,
@@ -19,7 +21,8 @@ public class EventService : IEventService
         IUserRepository userRepository,
         IMapper mapper,
         ILogger<EventService> logger,
-        TicketBookingSystemContext context)  
+        TicketBookingSystemContext context,
+        IEmailService emailService)
     {
         _eventRepository = eventRepository;
         _bookingRepository = bookingRepository;
@@ -27,15 +30,37 @@ public class EventService : IEventService
         _mapper = mapper;
         _logger = logger;
         _context = context;
+        _emailService = emailService;
+    }
+    public async Task<IEnumerable<EventDto>> GetUpcomingEventsAsync(EventType? eventType = null)
+    {
+        IEnumerable<Event> events;
+
+        if (eventType.HasValue)
+        {
+            events = await _eventRepository.GetUpcomingEventsByTypeAsync((int)eventType.Value); // Explicitly cast EventType to int
+        }
+        else
+        {
+            events = await _eventRepository.GetUpcomingEventsAsync();
+        }
+
+        return _mapper.Map<IEnumerable<EventDto>>(events);
+    }
+    public async Task<IEnumerable<EventDto>> GetUpcomingEventsByType(EventType eventType)
+    {
+        var events = await _eventRepository.GetUpcomingEventsByTypeAsync((int)eventType);
+        return _mapper.Map<IEnumerable<EventDto>>(events);
     }
 
-    public async Task<BookingDto> BookSeatsAsync(int eventId, List<int> seatIds, string username)
+
+    public async Task<BookingDto> BookSeatsAsync(int eventId, List<int> seatIds, User user)
     {
         await using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
         {
-            var user = await _userRepository.GetByUsernameAsync(username)
+            var userName = await _userRepository.GetByUsernameAsync(user.UserName)
                 ?? throw new Exception("User not found.");
 
             var evt = await _eventRepository.GetEventByIdAsync(eventId)
@@ -61,11 +86,12 @@ public class EventService : IEventService
             }
 
             evt.AvailableTickets -= seatIds.Count;
-
+            var referenceNumber = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper();
             var booking = new Booking
             {
                 EventId = eventId,
                 UserId = user.Id,
+                ReferenceNumber = referenceNumber,
                 BookingDate = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("India Standard Time")),
                 Quantity = seatIds.Count,
                 Username = user.UserName,
@@ -79,10 +105,14 @@ public class EventService : IEventService
             _context.Seats.UpdateRange(seatsToBook);
             _context.Events.Update(evt);
 
-            await _context.SaveChangesAsync(); 
+            await _context.SaveChangesAsync();
 
             await transaction.CommitAsync();
+            var bookingDto = _mapper.Map<BookingDto>(booking);
+            bookingDto.Email = user.Email;
+            await _emailService.SendBookingConfirmationEmailAsync(bookingDto);
             return _mapper.Map<BookingDto>(booking);
+
         }
         catch (Exception ex)
         {
@@ -93,13 +123,13 @@ public class EventService : IEventService
     }
 
 
-    public async Task<BookingDto> BookGeneralTicketsAsync(int eventId, int quantity, string username)
+    public async Task<BookingDto> BookGeneralTicketsAsync(int eventId, int quantity, User user)
     {
         using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
         {
-            var user = await _userRepository.GetByUsernameAsync(username)
+            var userName = await _userRepository.GetByUsernameAsync(user.UserName)
                 ?? throw new Exception("User not found.");
 
             var evt = await _eventRepository.GetEventByIdAsync(eventId)
@@ -112,17 +142,18 @@ public class EventService : IEventService
                 throw new Exception("Not enough tickets available.");
 
             evt.AvailableTickets -= quantity;
-
+            var referenceNumber = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper();
             var booking = new Booking
             {
                 EventId = eventId,
+                ReferenceNumber = referenceNumber,
                 UserId = user.Id,
                 BookingDate = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("India Standard Time")),
                 Quantity = quantity,
                 EventDateTime = evt.EventDateTime,
                 EventTitle = evt.Title,
                 IsSeatBased = evt.IsSeatBased,
-                Username = username
+                Username = user.UserName
             };
 
             await _bookingRepository.AddAsync(booking);
@@ -132,13 +163,15 @@ public class EventService : IEventService
             await _context.SaveChangesAsync();
 
             await transaction.CommitAsync();
-
+            var bookingDto = _mapper.Map<BookingDto>(booking);
+            bookingDto.Email = user.Email;
+            await _emailService.SendBookingConfirmationEmailAsync(bookingDto);
             return _mapper.Map<BookingDto>(booking);
         }
         catch (Exception ex)
         {
             await transaction.RollbackAsync();
-            _logger.LogError(ex, "Error booking general tickets for user {User} on event {EventId}", username, eventId);
+            _logger.LogError(ex, "Error booking general tickets for user {User} on event {EventId}", user.UserName, eventId);
             throw;
         }
     }
@@ -166,7 +199,7 @@ public class EventService : IEventService
             if (evt.EventDateTime <= DateTime.UtcNow)
                 throw new InvalidOperationException("Cannot cancel booking after the event has started.");
 
-            // Here Th eupdated tickets will be shown
+            // Here The updated tickets will be shown
             evt.AvailableTickets += booking.Quantity;
 
             // If seat-based booking, free seats
@@ -184,8 +217,6 @@ public class EventService : IEventService
             }
 
             _context.Events.Update(evt);
-
-            // Remove booking record
             _bookingRepository.Delete(booking);
 
             await _context.SaveChangesAsync();
@@ -250,6 +281,8 @@ public class EventService : IEventService
         existing.VenueId = dto.VenueId;
         existing.Price = dto.Price;
         existing.TotalTickets = dto.TotalTickets;
+        existing.EventType = dto.EventType;
+        existing.ImageUrl = dto.ImageUrl;
 
         existing.IsSeatBased = dto.IsSeatBased;
 

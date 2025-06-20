@@ -1,0 +1,84 @@
+﻿@model TicketBookingWebApp.Web.ViewModels.VenueManagementViewModel;
+@{
+    ViewData["Title"] = "Manage Venues";
+}
+
+<div class="container mt-4">
+    <h2>Manage Venues</h2>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            @if (Model.IsEditMode)
+            {
+                <strong>Edit Venue</strong>
+            }
+            else
+            {
+                <strong>Add New Venue</strong>
+            }
+        </div>
+        <div class="card-body">
+            <form asp-action="SaveVenue" method="post">
+                <input type="hidden" asp-for="Venue.Id" />
+
+                <div class="form-group">
+                    <label asp-for="Venue.Name"></label>
+                    <input asp-for="Venue.Name" class="form-control" />
+                    <span asp-validation-for="Venue.Name" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Venue.Address"></label>
+                    <input asp-for="Venue.Address" class="form-control" />
+                    <span asp-validation-for="Venue.Address" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Venue.Capacity"></label>
+                    <input asp-for="Venue.Capacity" class="form-control" />
+                    <span asp-validation-for="Venue.Capacity" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn-success">
+                    @(Model.IsEditMode ? "Update" : "Add")
+                </button>
+                @if (Model.IsEditMode)
+                {
+                    <a class="btn btn-secondary" href="@Url.Action("Manage")">Cancel</a>
+                }
+            </form>
+        </div>
+    </div>
+
+    <!-- List of Venues -->
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Address</th>
+                <th>Capacity</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var v in Model.Venues)
+            {
+                <tr>
+                    <td>@v.Name</td>
+                    <td>@v.Address</td>
+                    <td>@v.Capacity</td>
+                    <td>
+                        <a class="btn btn-sm btn-warning" href="@Url.Action("Manage", new { id = v.Id })">Edit</a>
+                        <form asp-action="Delete" asp-route-id="@v.Id" method="post" style="display:inline">
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this venue?');">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -18,9 +18,12 @@ public class BookingRepository : IBookingRepository
 
     public async Task<int> GetUserIdByUsernameAsync(string username)
     {
-        var user = await _users.FirstOrDefaultAsync(u => u.UserName == username);
-        return user?.Id ?? 0;
+        var user = await _context.Users
+            .FirstOrDefaultAsync(u => u.UserName == username);
+
+        return user?.Id ?? 0; // Assuming 0 means "not found"
     }
+
 
     public async Task<List<Seat>> GetAvailableSeatsWithRowVersionAsync(List<int> seatIds)
     {

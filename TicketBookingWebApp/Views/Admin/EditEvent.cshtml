@@ -1,65 +1,85 @@
 ﻿@model TicketBookingWebApp.Application.DTOs.EventDto
 
 @{
-	ViewData["Title"] = "Edit Event";
+    ViewData["Title"] = "Edit Event";
 }
 
 <div class="container mt-4">
-	<h2>Edit Event</h2>
-	<form asp-action="EditEvent" method="post">
-		<input type="hidden" asp-for="Id" />
+    <h2>Edit Event</h2>
+    <form asp-action="EditEvent" method="post">
+        <input type="hidden" asp-for="Id" />
 
-		<div class="form-group">
-			<label asp-for="Title"></label>
-			<input asp-for="Title" class="form-control" />
-			<input type="hidden" asp-for="AvailableTickets" />
-			<input type="hidden" asp-for="Seats" />
-			<span asp-validation-for="Title" class="text-danger"></span>
-		</div>
+        <div class="form-group">
+            <label asp-for="Title"></label>
+            <input asp-for="Title" class="form-control" />
+            <input type="hidden" asp-for="AvailableTickets" />
+            <input type="hidden" asp-for="Seats" />
+            <span asp-validation-for="Title" class="text-danger"></span>
+        </div>
 
-		<div class="form-group">
-			<label asp-for="Description"></label>
-			<textarea asp-for="Description" class="form-control"></textarea>
-			<span asp-validation-for="Description" class="text-danger"></span>
-		</div>
-		<div class="form-group">
-			<label asp-for="EventDateTime"></label>
-			<input asp-for="EventDateTime" class="form-control" type="datetime-local" />
-		</div>
+        <div class="form-group">
+            <label asp-for="Description"></label>
+            <textarea asp-for="Description" class="form-control"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
 
-		@* <div class="form-group"> *@
-		@* 	<label asp-for="Venue.Name">Venue</label> *@
-		@* 	<select asp-for="Venue.Name" class="form-control" asp-items="@ViewBag.Venues"> *@
-		@* 		<option value="">Select</option> *@
-		@* 	</select> *@
-		@* 	<span asp-validation-for="Venue.Name" class="text-danger"></span> *@
-		@* </div> *@
-		<div class="form-group">
-			<label asp-for="VenueId"></label>
-			<select asp-for="VenueId" class="form-control" asp-items="@ViewBag.Venues">
-				<option value="">Select</option>
-			</select>
-			<span asp-validation-for="VenueId" class="text-danger"></span>
-		</div>
+        <div class="form-group">
+            <label asp-for="EventDateTime"></label>
+            <input asp-for="EventDateTime" class="form-control" type="datetime-local" />
+        </div>
 
-		<div class="form-check mb-3">
-			<input asp-for="IsSeatBased" class="form-check-input" />
-			<label asp-for="IsSeatBased" class="form-check-label"></label>
-			<span asp-validation-for="IsSeatBased" class="text-danger"></span>
-		</div> 
-		<div class="form-group">
-			<label asp-for="Price"></label>
-			<input asp-for="Price" class="form-control" type="number" step="0.01" />
-		</div>
+        <div class="form-group">
+            <label asp-for="VenueId"></label>
+            <select asp-for="VenueId" class="form-control" asp-items="@ViewBag.Venues">
+                <option value="">Select</option>
+            </select>
+            <span asp-validation-for="VenueId" class="text-danger"></span>
+        </div>
+
+        <div class="form-check mb-3">
+            <input asp-for="IsSeatBased" class="form-check-input" />
+            <label asp-for="IsSeatBased" class="form-check-label"></label>
+            <span asp-validation-for="IsSeatBased" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Price"></label>
+            <input asp-for="Price" class="form-control" type="number" step="0.01" />
+        </div>
+
+        <div class="form-group">
+            <label asp-for="TotalTickets"></label>
+            <input asp-for="TotalTickets" class="form-control" />
+            <span asp-validation-for="TotalTickets" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="ImageUrl">Image URL</label>
+            <input asp-for="ImageUrl" class="form-control" placeholder="Paste image link (e.g., https://...)" />
+            <span asp-validation-for="ImageUrl" class="text-danger"></span>
+        </div>
+
+        <div class="form-group"> 
+            <label asp-for="Type">Event Type</label>
+            @{
+                var eventTypes = Enum.GetValues(typeof(TicketBookingWebApp.Domain.Enums.EventType))
+                .Cast<TicketBookingWebApp.Domain.Enums.EventType>()
+                .Select(e => new SelectListItem
+            {
+                Value = ((int)e).ToString(),
+                Text = e.ToString(),
+                Selected = Model.Type == e
+            }).ToList();
+            }
+            <select asp-for="Type" class="form-control" asp-items="ViewBag.EventTypes">
+                <option value="">Select Event Type</option>
+            </select>
 
 
-		<div class="form-group">
-			<label asp-for="TotalTickets"></label>
-			<input asp-for="TotalTickets" class="form-control" />
-			<span asp-validation-for="TotalTickets" class="text-danger"></span>
-		</div>
+            <span asp-validation-for="Type" class="text-danger"></span>
+        </div>
 
-		<button type="submit" class="btn btn-success">Save Changes</button>
-		<a class="btn btn-secondary" href="@Url.Action("Index")">Cancel</a>
-	</form>
+        <button type="submit" class="btn btn-success">Save Changes</button>
+        <a class="btn btn-secondary" href="@Url.Action("Index")">Cancel</a>
+    </form>
 </div>
