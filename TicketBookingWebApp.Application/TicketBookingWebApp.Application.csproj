@@ -30,4 +30,8 @@
     <ProjectReference Include="..\TicketBookingWebApp.Infrastructure\TicketBookingWebApp.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Helpers\" />
+  </ItemGroup>
+
 </Project>

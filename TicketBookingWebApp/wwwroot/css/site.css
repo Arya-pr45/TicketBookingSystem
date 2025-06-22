@@ -30,13 +30,14 @@
     }
 
     .auth-card .btn-primary {
-        background-color: #e50914;
-        border-color: #e50914;
+        background-color: #007bff;
+        border-color: #007bff;
     }
 
-        .auth-card .btn-primary:hover {
-            background-color: #c40812;
-        }
+    .auth-card .btn-primary:hover {
+       background-color: #0069d9; 
+    }
+
 
     .auth-card p {
         margin-top: 1rem;

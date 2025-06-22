@@ -7,99 +7,35 @@
 <style>
     body {
         font-family: 'Poppins', sans-serif;
-        background-color: #f8f9fa;
-        color: #333;
-    }
-
-        body.dark-mode {
-            background-color: #121212;
-            color: #e0e0e0;
-        }
-
-    .dark-mode .card {
-        background-color: #1e1e1e;
-        border: 1px solid #333;
-    }
-
-    .welcome-card {
-        border-radius: 1.5rem;
-        transition: all 0.3s ease-in-out;
-        overflow: hidden;
-    }
-
-        .welcome-card:hover {
-            transform: scale(1.01);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-        }
-
-    .hero-title {
-        font-weight: 700;
-        font-size: 3rem;
-    }
-
-    .hero-subtitle {
-        font-size: 1.25rem;
-        color: #6c757d;
-    }
-
-    .btn-custom {
-        min-width: 140px;
-        font-weight: 600;
-        border-radius: 0.5rem;
-        transition: all 0.3s ease;
-    }
-
-        .btn-custom:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-        }
-
-    .hero-image-container {
-        position: relative;
-    }
-
-    .hero-image {
-        max-height: 300px;
-        object-fit: cover;
-        width: 100%;
-        border-radius: 1rem;
-        margin-bottom: 2rem;
-        filter: brightness(90%);
-    }
-
-    .overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        height: 100%;
-        width: 100%;
-        background: linear-gradient(to bottom right, rgba(0,0,0,0.3), rgba(0,0,0,0.5));
-        border-radius: 1rem;
     }
 </style>
 
-<div class="container d-flex align-items-center justify-content-center" style="min-height: 90vh;">
-    <div class="card shadow welcome-card text-center p-5 w-100" style="max-width: 700px;">
-        <div class="hero-image-container">
-            <img src="~/img/ticket-hero.jpeg" alt="People enjoying event" class="hero-image">
-            <div class="overlay"></div>
+<div class="container d-flex align-items-center justify-content-center min-vh-100">
+    <div class="card shadow-lg text-center p-5 w-100" style="max-width: 700px; border-radius: 1rem;">
+
+        <div class="position-relative mb-4">
+            <img src="~/img/ticket-hero.jpeg" alt="People enjoying event"
+                 class="img-fluid rounded" style="max-height: 300px; object-fit: cover; width: 100%; filter: brightness(85%);">
+            <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 rounded"></div>
         </div>
 
-        <h1 class="hero-title mb-3">Welcome to TicketBookingSystem</h1>
-        <p class="hero-subtitle mb-4">
+        <h1 class="display-5 fw-bold text-danger mb-3">Welcome to TicketBookingSystem</h1>
+
+        <p class="lead text-muted mb-4 fw-semibold">
             Book tickets for concerts, movies, sports & more. Fast. Secure. Effortless.
         </p>
 
         @if (!User.Identity.IsAuthenticated)
         {
-            <div class="d-flex justify-content-center gap-3 mt-4">
-                <a asp-controller="Auth" asp-action="Login" class="btn btn-primary btn-lg btn-custom">
+            <div class="d-flex justify-content-center gap-3">
+                <a asp-controller="Auth" asp-action="Login" class="btn btn-primary btn-lg px-4 fw-semibold">
                     Login
                 </a>
-                <a asp-controller="Auth" asp-action="RegisterUser" class="btn btn-outline-primary btn-lg btn-custom">
+                <a asp-controller="Auth" asp-action="RegisterUser" class="btn btn-outline-primary btn-lg px-4 fw-semibold">
                     Register
                 </a>
             </div>
         }
+
     </div>
 </div>

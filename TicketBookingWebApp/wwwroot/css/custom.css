@@ -1,8 +1,16 @@
-﻿:root {
+﻿@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap");
+
+:root {
     --primary-color: #e40000;
     --text-dark: #212121;
     --text-light: #6c757d;
     --bg-light: #f8f9fa;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    color: var(--text-dark);
+    background-color: var(--bg-light);
 }
 
 a,

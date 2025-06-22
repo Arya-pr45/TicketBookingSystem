@@ -11,8 +11,9 @@ namespace TicketBookingWebApp.Application.DTOs
     {
 
 
-        [Required]
-        [EmailAddress]
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Invalid email format.")]
+        [RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", ErrorMessage = "Email must be a valid format (e.g., name@example.com).")]
         public string Email { get; set; }
 
         [Required]

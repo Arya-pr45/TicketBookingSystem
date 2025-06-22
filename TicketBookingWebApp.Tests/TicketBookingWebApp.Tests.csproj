@@ -32,8 +32,4 @@
     <ProjectReference Include="..\TicketBookingWebApp\TicketBookingWebApp.Web.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
-
 </Project>

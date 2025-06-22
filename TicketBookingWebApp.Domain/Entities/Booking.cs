@@ -37,6 +37,9 @@ public partial class Booking
     [Unicode(false)]
     public string? ReferenceNumber { get; set; }
 
+    [StringLength(100)]
+    public string? SeatNumber { get; set; }
+
     [ForeignKey("EventId")]
     [InverseProperty("Bookings")]
     public virtual Event Event { get; set; } = null!;

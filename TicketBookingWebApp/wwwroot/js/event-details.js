@@ -50,6 +50,9 @@
     });
 
     submitBtn.addEventListener("click", async function () {
+        const confirmed = window.confirm("Are you sure you want to book these tickets?");
+        if (!confirmed) return;
+
         const seatIdList = Array.from(selectedSeatIds).map(id => parseInt(id));
         const quantity = parseInt(quantityHiddenInput?.value || "1");
 
