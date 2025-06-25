@@ -1,4 +1,5 @@
 ﻿using TicketBookingWebApp.Application.DTOs;
+using TicketBookingWebApp.Common.Pagination;
 using TicketBookingWebApp.Domain.Entities;
 
 namespace TicketBookingWebApp.Application.Interfaces

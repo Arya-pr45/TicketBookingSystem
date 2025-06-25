@@ -29,7 +29,7 @@ public class BookingRepository : IBookingRepository
     {
         return await _seats
             .Where(s => seatIds.Contains(s.Id) && !s.IsBooked)
-            .AsTracking()
+            .AsTracking() // enables EFcore to track changes to these entities wich is essential when applying concurrency control via RowVersion
             .ToListAsync();
     }
 
@@ -45,7 +45,7 @@ public class BookingRepository : IBookingRepository
     {
         _context.Bookings.Add(booking);
         await _context.SaveChangesAsync();
-        return booking;
+        return booking; // adds a new booking record to the database and return bookings created object
     }
 
     public async Task<IEnumerable<Booking>> GetBookingsByUsernameAsync(string username)
@@ -64,7 +64,7 @@ public class BookingRepository : IBookingRepository
     public async Task<IEnumerable<Booking>> GetByUserIdAsync(int userId)
     {
         return await _context.Bookings
-            .Include(b => b.Event) 
+            .Include(b => b.Event)
             .Where(b => b.UserId == userId)
             .ToListAsync();
     }

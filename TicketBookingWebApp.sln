@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicketBookingWebApp.Tests",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicketBookingWebApp.Infrastructure", "TicketBookingWebApp.Infrastructure\TicketBookingWebApp.Infrastructure.csproj", "{664121F3-06FC-497B-A810-87EF3035FD9D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TicketBookingWebApp.Common", "TicketBookingWebApp.Common\TicketBookingWebApp.Common.csproj", "{7630D28E-21EC-4325-8822-E5352158F24F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{664121F3-06FC-497B-A810-87EF3035FD9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{664121F3-06FC-497B-A810-87EF3035FD9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{664121F3-06FC-497B-A810-87EF3035FD9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7630D28E-21EC-4325-8822-E5352158F24F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7630D28E-21EC-4325-8822-E5352158F24F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7630D28E-21EC-4325-8822-E5352158F24F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7630D28E-21EC-4325-8822-E5352158F24F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -9,6 +9,8 @@ public interface IAdminService
     Task CreateEventAsync(Event ev);
     Task UpdateEventAsync(Event ev);
     Task DeleteEventAsync(int id);
+    Task<User?> GetUserProfileAsync(string userName);
+
 
     // Venues
     Task<IEnumerable<Venue>> GetAllVenuesAsync();

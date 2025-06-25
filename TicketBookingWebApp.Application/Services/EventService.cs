@@ -1,7 +1,11 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using TicketBookingWebApp.Application.DTOs;
+using TicketBookingWebApp.Application.DTOs.Filters;
+using TicketBookingWebApp.Application.Exceptions;
 using TicketBookingWebApp.Application.Interfaces;
+using TicketBookingWebApp.Common.Pagination;
 using TicketBookingWebApp.Domain.Entities;
 using TicketBookingWebApp.Domain.Enums;
 
@@ -38,7 +42,7 @@ public class EventService : IEventService
 
         if (eventType.HasValue)
         {
-            events = await _eventRepository.GetUpcomingEventsByTypeAsync((int)eventType.Value); // Explicitly cast EventType to int
+            events = await _eventRepository.GetUpcomingEventsByTypeAsync((int)eventType.Value);
         }
         else
         {
@@ -47,11 +51,30 @@ public class EventService : IEventService
 
         return _mapper.Map<IEnumerable<EventDto>>(events);
     }
-    public async Task<IEnumerable<EventDto>> GetUpcomingEventsByType(EventType eventType)
+    public async Task<PagedResult<EventDto>> GetUpcomingEventsByTypeAsync(EventType eventType, int pageNumber = 1, int pageSize = 10)
     {
-        var events = await _eventRepository.GetUpcomingEventsByTypeAsync((int)eventType);
-        return _mapper.Map<IEnumerable<EventDto>>(events);
+        var query = _eventRepository.GetEventsAsQueryable()
+                                    .Where(e => e.EventDateTime > DateTime.UtcNow && e.EventType == (int)eventType);
+
+        var totalCount = await query.CountAsync();
+
+        var events = await query
+            .OrderBy(e => e.EventDateTime)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var mapped = _mapper.Map<IEnumerable<EventDto>>(events);
+
+        return new PagedResult<EventDto>
+        {
+            Items = mapped,
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
     }
+
 
 
     public async Task<BookingDto> BookSeatsAsync(int eventId, List<int> seatIds, User user)
@@ -81,11 +104,11 @@ public class EventService : IEventService
             {
                 if (seat.IsBooked)
                     throw new Exception($"Seat {seat.SeatNumber} is already booked.");
-
                 seat.IsBooked = true;
             }
 
             evt.AvailableTickets -= seatIds.Count;
+
             var referenceNumber = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper();
             var booking = new Booking
             {
@@ -105,22 +128,31 @@ public class EventService : IEventService
             _context.Seats.UpdateRange(seatsToBook);
             _context.Events.Update(evt);
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Concurrency conflict while booking seats for event {EventId}", eventId);
+                throw new InvalidOperationException("The seats or event were modified by another user. Please try again.");
+            }
 
-            await transaction.CommitAsync();
             var bookingDto = _mapper.Map<BookingDto>(booking);
             bookingDto.Email = user.Email;
             await _emailService.SendBookingConfirmationEmailAsync(bookingDto);
-            return _mapper.Map<BookingDto>(booking);
-
+            return bookingDto;
         }
         catch (Exception ex)
         {
-            await transaction.RollbackAsync(); // Rollback on any error
+            await transaction.RollbackAsync();
             _logger.LogError(ex, "Failed to book seats");
             throw;
         }
     }
+
 
 
     public async Task<BookingDto> BookGeneralTicketsAsync(int eventId, int quantity, User user)
@@ -142,12 +174,13 @@ public class EventService : IEventService
                 throw new Exception("Not enough tickets available.");
 
             evt.AvailableTickets -= quantity;
+
             var referenceNumber = Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper();
             var booking = new Booking
             {
                 EventId = eventId,
                 ReferenceNumber = referenceNumber,
-                UserId = user.Id,
+                UserId = userName.Id,
                 BookingDate = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById("India Standard Time")),
                 Quantity = quantity,
                 EventDateTime = evt.EventDateTime,
@@ -157,52 +190,56 @@ public class EventService : IEventService
             };
 
             await _bookingRepository.AddAsync(booking);
-
             _context.Events.Update(evt);
 
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Concurrency conflict while booking general tickets for event {EventId}", eventId);
+                throw new InvalidOperationException("The event was modified by another user. Please try again.");
+            }
 
-            await transaction.CommitAsync();
             var bookingDto = _mapper.Map<BookingDto>(booking);
             bookingDto.Email = user.Email;
             await _emailService.SendBookingConfirmationEmailAsync(bookingDto);
-            return _mapper.Map<BookingDto>(booking);
+            return bookingDto;
         }
         catch (Exception ex)
         {
             await transaction.RollbackAsync();
-            _logger.LogError(ex, "Error booking general tickets for user {User} on event {EventId}", user.UserName, eventId);
+            _logger.LogError(ex, "Error booking general tickets");
             throw;
         }
     }
+
     public async Task CancelBookingAsync(int bookingId, string username)
     {
         using var transaction = await _context.Database.BeginTransactionAsync();
 
         try
         {
-            // Get booking by ID
             var booking = await _bookingRepository.GetByIdAsync(bookingId)
-                ?? throw new Exception("Booking not found.");
+                ?? throw new BookingConflictException("Booking not found.");
 
-            // Verify whether its same users booking or not
             var user = await _userRepository.GetByUsernameAsync(username)
                 ?? throw new Exception("User not found.");
 
             if (booking.UserId != user.Id)
                 throw new UnauthorizedAccessException("You can only cancel your own bookings.");
 
-            // This will check whether the vent has started or initiated or not
             var evt = await _eventRepository.GetEventByIdAsync(booking.EventId)
                 ?? throw new Exception("Associated event not found.");
 
             if (evt.EventDateTime <= DateTime.UtcNow)
                 throw new InvalidOperationException("Cannot cancel booking after the event has started.");
 
-            // Here The updated tickets will be shown
             evt.AvailableTickets += booking.Quantity;
 
-            // If seat-based booking, free seats
             if (booking.IsSeatBased && !string.IsNullOrEmpty(booking.SeatIds))
             {
                 var seatIds = booking.SeatIds.Split(',').Select(int.Parse).ToList();
@@ -219,15 +256,26 @@ public class EventService : IEventService
             _context.Events.Update(evt);
             _bookingRepository.Delete(booking);
 
-            await _context.SaveChangesAsync();
-            await transaction.CommitAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                await transaction.RollbackAsync();
+                _logger.LogError(ex, "Concurrency conflict while cancelling booking {BookingId}", bookingId);
+                throw new InvalidOperationException("The event or seats were modified by another user. Please try again.");
+            }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             await transaction.RollbackAsync();
+            _logger.LogError(ex, "Failed to cancel booking");
             throw;
         }
     }
+
 
     public async Task<BookingDto?> GetBookingByIdAsync(int bookingId)
     {
@@ -325,14 +373,91 @@ public class EventService : IEventService
     }
     public async Task DeleteEventAsync(int id)
     {
+        var currentSeats = await _eventRepository.GetSeatsByEventIdAsync(id);
+
+        _context.Seats.RemoveRange(currentSeats);
+        await _eventRepository.SaveChangesAsync();
+
         await _eventRepository.DeleteEventAsync(id);
     }
-    public async Task<IEnumerable<EventDto>> GetAllEventsAsync()
+    public async Task<PagedResult<EventDto>> GetAllEventsAsync(int pageNumber = 1, int pageSize = 10)
     {
-        var events = await _eventRepository.GetAllEventsAsync();
-        // Optionally filter upcoming events or return all
-        return _mapper.Map<IEnumerable<EventDto>>(events);
+        var query = _eventRepository.GetEventsAsQueryable();
+
+        var totalCount = await query.CountAsync();
+
+        var events = await query
+            .OrderBy(e => e.EventDateTime)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var mapped = _mapper.Map<IEnumerable<EventDto>>(events);
+
+        return new PagedResult<EventDto>
+        {
+            Items = mapped,
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
     }
+    public async Task<PagedResult<EventDto>> GetFilteredEventsAsync(EventFilterParams filters, int pageNumber, int pageSize)
+    {
+        var query = _eventRepository.GetEventsAsQueryable();
+
+        if (!string.IsNullOrEmpty(filters.Keyword))
+            query = query.Where(e => e.Title.Contains(filters.Keyword));
+
+        if (!string.IsNullOrEmpty(filters.EventType))
+        {
+            if (int.TryParse(filters.EventType, out var eventTypeValue))
+            {
+                query = query.Where(e => e.EventType == eventTypeValue);
+            }
+        }
+
+        if (filters.FromDate.HasValue)
+            query = query.Where(e => e.EventDateTime >= filters.FromDate.Value);
+
+        if (filters.ToDate.HasValue)
+            query = query.Where(e => e.EventDateTime <= filters.ToDate.Value);
+
+        if (filters.MinPrice.HasValue)
+            query = query.Where(e => e.Price >= filters.MinPrice.Value);
+
+        if (filters.MaxPrice.HasValue)
+            query = query.Where(e => e.Price <= filters.MaxPrice.Value);
+
+        if (filters.OnlyAvailable == true)
+            query = query.Where(e => e.AvailableTickets > 0);
+
+        query = filters.SortBy switch
+        {
+            "price" => query.OrderBy(e => e.Price),
+            "date" => query.OrderBy(e => e.EventDateTime),
+            _ => query.OrderByDescending(e => e.CreatedAt)
+        };
+
+        var totalCount = await query.CountAsync();
+
+        var events = await query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var mapped = _mapper.Map<IEnumerable<EventDto>>(events);
+
+        return new PagedResult<EventDto>
+        {
+            Items = mapped,
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
+    }
+
+
 
     public async Task<EventDto?> GetEventDetailsAsync(int eventId)
     {
@@ -351,10 +476,34 @@ public class EventService : IEventService
         return eventDto;
     }
 
-    public async Task<IEnumerable<EventDto>> GetUpcomingEventsAsync()
+    public async Task<PagedResult<EventDto>> GetUpcomingEventsAsync(EventType? eventType = null, int pageNumber = 1, int pageSize = 10)
     {
-        var events = await _eventRepository.GetUpcomingEventsAsync();
-        return _mapper.Map<IEnumerable<EventDto>>(events);
+        IQueryable<Event> query = _eventRepository.GetEventsAsQueryable()
+                                                  .Where(e => e.EventDateTime > DateTime.UtcNow);
+
+        if (eventType.HasValue)
+        {
+            query = query.Where(e => e.EventType == (int)eventType.Value);
+        }
+
+        var totalCount = await query.CountAsync();
+
+        var events = await query
+            .OrderBy(e => e.EventDateTime)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        var mapped = _mapper.Map<IEnumerable<EventDto>>(events);
+
+        return new PagedResult<EventDto>
+        {
+            Items = mapped,
+            TotalCount = totalCount,
+            PageNumber = pageNumber,
+            PageSize = pageSize
+        };
     }
+
 
 }

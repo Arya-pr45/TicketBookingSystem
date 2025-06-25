@@ -2,8 +2,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TicketBookingWebApp.Application.DTOs;
+using TicketBookingWebApp.Application.DTOs.Filters;
 using TicketBookingWebApp.Application.Interfaces;
-using TicketBookingWebApp.Application.Services;
 using TicketBookingWebApp.Domain.Entities;
 using TicketBookingWebApp.Domain.Enums;
 
@@ -21,25 +21,14 @@ namespace TicketBookingWebApp.Web.Controllers
             _bookingService = bookingService;
         }
 
-        public async Task<IActionResult> Index(string? searchTerm, int? eventType)
+        public async Task<IActionResult> Index(EventFilterParams filters, int pageNumber = 1, int pageSize = 10)
         {
-            EventType? eventTypeEnum = eventType.HasValue ? (EventType?)eventType.Value : null;
-
-            var events = await _eventService.GetUpcomingEventsAsync((EventType?)eventType);
-
-            if (!string.IsNullOrWhiteSpace(searchTerm))
-            {
-                events = events
-                    .Where(e => e.Title.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-            }
-
-            ViewBag.CurrentFilter = searchTerm;
-            ViewBag.SelectedType = eventType;
-            ViewBag.EventTypes = Enum.GetValues(typeof(EventType)).Cast<EventType>();
-
-            return View(events);
+            var result = await _eventService.GetFilteredEventsAsync(filters, pageNumber, pageSize);
+            ViewBag.Filters = filters; // Here the filters will be passed back to the view to preserve values 
+            return View(result);
         }
+
+
         public async Task<IActionResult> Details(int id)
         {
             var eventDto = await _eventService.GetEventDetailsAsync(id);
@@ -59,6 +48,7 @@ namespace TicketBookingWebApp.Web.Controllers
 
                 return BadRequest(new { message = "Invalid booking data", errors });
             }
+
             var user = new User()
             {
                 UserName = User.FindFirst(ClaimTypes.Name)?.Value,
@@ -90,7 +80,6 @@ namespace TicketBookingWebApp.Web.Controllers
                 return StatusCode(500, new { error = ex.Message });
             }
         }
-
 
         [HttpGet]
         public async Task<IActionResult> BookingDetails(int bookingId)

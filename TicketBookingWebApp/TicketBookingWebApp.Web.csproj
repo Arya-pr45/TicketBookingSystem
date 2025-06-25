@@ -38,6 +38,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\TicketBookingWebApp.Application\TicketBookingWebApp.Application.csproj" />
+    <ProjectReference Include="..\TicketBookingWebApp.Common\TicketBookingWebApp.Common.csproj" />
     <ProjectReference Include="..\TicketBookingWebApp.Domain\TicketBookingWebApp.Domain.csproj" />
   </ItemGroup>
 

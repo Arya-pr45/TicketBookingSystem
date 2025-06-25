@@ -1,7 +1,7 @@
 .auth-background {
     min-height: 100vh;
     background: linear-gradient(to bottom right, #ffffff, #e9f0f7);
-    background-image: url('/img/login_bg.jpg'); 
+    background-image: url('/img/login_bg.jpg');
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
@@ -34,12 +34,27 @@
         border-color: #007bff;
     }
 
-    .auth-card .btn-primary:hover {
-       background-color: #0069d9; 
-    }
+        .auth-card .btn-primary:hover {
+            background-color: #0069d9;
+        }
 
 
     .auth-card p {
         margin-top: 1rem;
         font-size: 0.95rem;
     }
+
+#reloadOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(5px);
+    background-color: rgba(255, 255, 255, 0.6);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+

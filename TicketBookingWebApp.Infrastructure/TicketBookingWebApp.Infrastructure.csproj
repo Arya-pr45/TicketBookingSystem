@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TicketBookingWebApp.Common\TicketBookingWebApp.Common.csproj" />
     <ProjectReference Include="..\TicketBookingWebApp.Domain\TicketBookingWebApp.Domain.csproj" />
   </ItemGroup>
 

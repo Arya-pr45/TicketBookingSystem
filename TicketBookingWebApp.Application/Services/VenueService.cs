@@ -20,9 +20,6 @@ namespace TicketBookingWebApp.Application.Services
         public async Task<IEnumerable<VenueDto>> GetAllVenuesAsync()
         {
             var venues = await _venueRepository.GetAllVenuesAsync();
-            //IEnumerable<VenueDto>
-            //IList<VenueDto>
-            //List<VenueDto>
             return _mapper.Map<IEnumerable<VenueDto>>(venues);
         }
 

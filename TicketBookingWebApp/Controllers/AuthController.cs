@@ -16,6 +16,17 @@ namespace TicketBookingWebApp.Web.Controllers
         [HttpGet]
         public IActionResult RegisterUser()
         {
+            var token = Request.Cookies["AuthToken"];
+            if (!string.IsNullOrEmpty(token))
+            {
+                var role = User.IsInRole("Admin") ? "admin" : "user";
+
+                if (role == "admin")
+                    return RedirectToAction("Index", "Admin");
+
+                return RedirectToAction("Index", "Event");
+            }
+
             return View(new RegisterDto());
         }
 
@@ -48,6 +59,17 @@ namespace TicketBookingWebApp.Web.Controllers
         [HttpGet]
         public IActionResult Login()
         {
+            var token = Request.Cookies["AuthToken"];
+            if (!string.IsNullOrEmpty(token))
+            {
+                var role = User.IsInRole("Admin") ? "admin" : "user"; 
+
+                if (role == "admin")
+                    return RedirectToAction("Index", "Admin");
+
+                return RedirectToAction("Index", "Event");
+            }
+
             return View();
         }
         [HttpPost]

@@ -18,10 +18,10 @@ namespace TicketBookingWebApp.Application.DTOs
         public string Email { get; set; }
 
         [Required(ErrorMessage = "Password is required.")]
-        [MinLength(6, ErrorMessage = "Password must be at least 6 characters.")]
+        [MinLength(3, ErrorMessage = "Password must be at least 3 characters.")]
+        //[RegularExpression(@"^(?=.*[!@#$%^&*(),.?""{}|<>]).+$", ErrorMessage = "Password must contain at least one special character.")]
         [DataType(DataType.Password)]
         public string Password { get; set; }
-
         public string? Role { get; set; }
     }
 }

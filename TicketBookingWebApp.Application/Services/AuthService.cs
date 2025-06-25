@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
+﻿using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Identity;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using TicketBookingWebApp.Application.DTOs;
 using TicketBookingWebApp.Application.Interfaces;
 using TicketBookingWebApp.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using TicketBookingWebApp.Application.Interfaces;
 using TicketBookingSystem.Application.DTOs;
 
 namespace TicketBookingWebApp.Application.Services

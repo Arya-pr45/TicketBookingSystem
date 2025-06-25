@@ -1,6 +1,6 @@
 ﻿using TicketBookingWebApp.Application.DTOs;
 
-namespace TicketBookingWebApp.Web.ViewModels
+namespace TicketBookingWebApp.Models
 {
     public class VenueManagementViewModel
     {

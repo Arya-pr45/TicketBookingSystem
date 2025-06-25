@@ -1,74 +1,89 @@
 ﻿@model TicketBookingWebApp.Application.DTOs.VenueDto
+<partial name="_Notification" />
 @{
-    ViewData["Title"] = "Manage Venues";
-    var venues = ViewBag.Venues as List<TicketBookingWebApp.Application.DTOs.VenueDto>;
-    var venueToEdit = ViewBag.VenueToEdit as TicketBookingWebApp.Application.DTOs.VenueDto;
+	ViewData["Title"] = "Manage Venues";
+	var venues = ViewBag.Venues as List<TicketBookingWebApp.Application.DTOs.VenueDto>;
+	var venueToEdit = ViewBag.VenueToEdit as TicketBookingWebApp.Application.DTOs.VenueDto;
 }
 
-<div class="container mt-4">
-    <h2>Manage Venues</h2>
+<div class="container mt-5">
+	<div class="row">
+		<div class="col-md-6">
+			<div class="card shadow-sm">
+				<div class="card-header bg-primary text-white">
+					<h5 class="mb-0">@((venueToEdit != null) ? "Edit Venue" : "Add New Venue")</h5>
+				</div>
+				<div class="card-body">
+					<form asp-action="@(venueToEdit != null ? "EditVenue" : "AddVenue")" method="post">
+						@if (venueToEdit != null)
+						{
+							<input type="hidden" name="Id" value="@venueToEdit.Id" />
+						}
 
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success">@TempData["Success"]</div>
-    }
+						<div class="mb-3">
+							<label class="form-label">Venue Name</label>
+							<input name="Name" placeholder="Venue Name" class="form-control" value="@(venueToEdit?.Name ?? "")" required />
+						</div>
 
-    <form asp-action="ManageVenues" method="post">
-        <input type="hidden" name="actionType" value="@(venueToEdit != null ? "edit" : "add")" />
-        <input type="hidden" asp-for="Id" value="@venueToEdit?.Id" />
+						<div class="mb-3">
+							<label class="form-label">Address</label>
+							<textarea name="Address" placeholder="Address" class="form-control" required>@(venueToEdit?.Address ?? "")</textarea>
+						</div>
 
-        <div class="form-group">
-            <label asp-for="Name"></label>
-            <input asp-for="Name" class="form-control" value="@venueToEdit?.Name" />
-        </div>
+						<div class="mb-3">
+							<label class="form-label">Capacity</label>
+							<input name="Capacity" placeholder="Capacity" type="number" class="form-control" value="@(venueToEdit?.Capacity ?? 0)" required min="1" />
+						</div>
 
-        <div class="form-group">
-            <label asp-for="Address"></label>
-            <input asp-for="Address" class="form-control" value="@venueToEdit?.Address" />
-        </div>
+						<div class="d-flex justify-content-between">
+							<button type="submit" class="btn btn-success">
+								@(venueToEdit != null ? "Update Venue" : "Add Venue")
+							</button>
+							@if (venueToEdit != null)
+							{
+								<a href="@Url.Action("ManageVenues", "Admin")" class="btn btn-outline-secondary">Cancel</a>
+							}
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
 
-        <div class="form-group">
-            <label asp-for="Capacity"></label>
-            <input asp-for="Capacity" class="form-control" value="@venueToEdit?.Capacity" />
-        </div>
+		<div class="col-md-6">
+			<h4 class="mb-3">Existing Venues</h4>
+			<table class="table table-bordered table-striped">
+				<thead class="table-dark">
+					<tr>
+						<th>Name</th>
+						<th>Address</th>
+						<th>Capacity</th>
+						<th>Actions</th>
+					</tr>
+				</thead>
+				<tbody>
+					@foreach (var venue in venues)
+					{
+						<tr>
+							<td>@venue.Name</td>
+							<td>@venue.Address</td>
+							<td>@venue.Capacity</td>
+							<td>
+								<a class="btn btn-sm btn-warning" href="@Url.Action("ManageVenues", new { editId = venue.Id })">Edit</a>
 
-        <button type="submit" class="btn btn-primary">
-            @(venueToEdit != null ? "Update Venue" : "Add Venue")
-        </button>
-        @if (venueToEdit != null)
-        {
-            <a class="btn btn-secondary" href="@Url.Action("ManageVenues")">Cancel</a>
-        }
-    </form>
+								<form id="deleteVenueForm-@venue.Id" asp-action="DeleteVenue" asp-controller="Admin" method="post" class="d-inline">
+									<input type="hidden" name="id" value="@venue.Id" />
+									<button type="button" class="btn btn-sm btn-danger"
+											onclick="showConfirmModal('deleteVenueForm-@venue.Id', 'Are you sure you want to delete this venue? All related events will also be deleted.')">
+										<i class="bi bi-trash-fill"></i> Delete
+									</button>
+								</form>
 
-    <hr />
-    <h4>Venue List</h4>
-    <table class="table table-bordered mt-3">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Address</th>
-                <th>Capacity</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var venue in venues)
-            {
-                <tr>
-                    <td>@venue.Name</td>
-                    <td>@venue.Address</td>
-                    <td>@venue.Capacity</td>
-                    <td>
-                        <a class="btn btn-warning btn-sm" href="@Url.Action("ManageVenues", new { editId = venue.Id })">Edit</a>
 
-                        <form asp-action="DeleteVenue" method="post" style="display:inline;">
-                            <input type="hidden" name="id" value="@venue.Id" />
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
 </div>

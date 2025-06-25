@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using TicketBookingWebApp.Common.Pagination;
 using TicketBookingWebApp.Domain.Entities;
 
 public interface IBookingRepository

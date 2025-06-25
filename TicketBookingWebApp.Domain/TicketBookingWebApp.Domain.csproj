@@ -22,4 +22,8 @@
     <PackageReference Include="xunit" Version="2.9.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\TicketBookingWebApp.Common\TicketBookingWebApp.Common.csproj" />
+  </ItemGroup>
+
 </Project>

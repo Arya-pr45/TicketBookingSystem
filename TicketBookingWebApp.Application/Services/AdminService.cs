@@ -1,7 +1,9 @@
 ﻿using System;
 using TicketBookingWebApp.Application.Interfaces;
 using TicketBookingWebApp.Domain.Entities;
-using TicketBookingWebApp.Application.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using TicketBookingWebApp.Common.Pagination;
+using TicketBookingWebApp.Infrastructure.Interfaces;
 
 namespace TicketBookingWebApp.Application.Services
 {
@@ -9,11 +11,14 @@ namespace TicketBookingWebApp.Application.Services
     {
         private readonly IEventRepository _eventRepo;
         private readonly IVenueRepository _venueRepo;
+        private readonly IAdminRepository _adminRepo;
 
-        public AdminService(IEventRepository eventRepo, IVenueRepository venueRepo)
+
+        public AdminService(IEventRepository eventRepo, IVenueRepository venueRepo, IAdminRepository adminRepo)
         {
             _eventRepo = eventRepo;
             _venueRepo = venueRepo;
+            _adminRepo = adminRepo;
         }
 
         // Events
@@ -22,6 +27,36 @@ namespace TicketBookingWebApp.Application.Services
         public async Task CreateEventAsync(Event ev) => await _eventRepo.AddEventAsync(ev);
         public async Task UpdateEventAsync(Event ev) => await _eventRepo.UpdateEventAsync(ev);
         public async Task DeleteEventAsync(int id) => await _eventRepo.DeleteEventAsync(id);
+        public async Task<PagedResult<Event>> GetPagedEventsAsync(int pageNumber, int pageSize, string? searchTerm = null)
+        {
+            var query = _eventRepo.GetEventsAsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                query = query.Where(e => e.Title.Contains(searchTerm));
+            }
+
+            var totalCount = await query.CountAsync();
+            var events = await query
+                .OrderBy(e => e.EventDateTime)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return new PagedResult<Event>
+            {
+                Items = events,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+        }
+        public async Task<User?> GetUserProfileAsync(string userName)
+        {
+            return await _adminRepo.GetUserByUserNameAsync(userName);
+        }
+
+
 
         // Venues
         public async Task<IEnumerable<Venue>> GetAllVenuesAsync() => await _venueRepo.GetAllVenuesAsync();

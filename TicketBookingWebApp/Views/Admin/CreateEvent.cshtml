@@ -1,81 +1,95 @@
 ﻿@model TicketBookingWebApp.Application.DTOs.EventDto
+<partial name="_Notification" />
+
 @{
     ViewData["Title"] = "Create Event";
+    var eventTypes = Enum.GetValues(typeof(TicketBookingWebApp.Domain.Enums.EventType))
+        .Cast<TicketBookingWebApp.Domain.Enums.EventType>()
+        .Select(e => new SelectListItem
+                {
+                    Value = ((int)e).ToString(),
+                    Text = e.ToString()
+                }).ToList();
 }
-<div class="container mt-4">
-    <h2>Create Event</h2>
-    <form asp-action="CreateEvent" method="post">
-        <div class="form-group">
-            <label asp-for="Title"></label>
-            <input asp-for="Title" class="form-control" />
-            <span asp-validation-for="Title" class="text-danger"></span>
+
+<div class="container py-5">
+    <div class="card border-0 shadow-lg rounded-4">
+        <div class="card-header bg-success text-white rounded-top-4">
+            <h3 class="mb-0">🎉 Create New Event</h3>
         </div>
-        <div class="form-group">
-            <label asp-for="Description"></label>
-            <textarea asp-for="Description" class="form-control"></textarea>
+        <div class="card-body px-5 py-4">
+            <form asp-action="CreateEvent" method="post" class="needs-validation" novalidate>
+                <div class="row g-4">
+
+                    <div class="col-md-6">
+                        <label asp-for="Title" class="form-label fw-semibold">Event Title</label>
+                        <input asp-for="Title" class="form-control" placeholder="Enter event name" />
+                        <span asp-validation-for="Title" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="EventDateTime" class="form-label fw-semibold">Event Date & Time</label>
+                        <input asp-for="EventDateTime" class="form-control" type="datetime-local" />
+                        <span asp-validation-for="EventDateTime" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label asp-for="Description" class="form-label fw-semibold">Description</label>
+                        <textarea asp-for="Description" class="form-control" rows="4" placeholder="Describe the event..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="VenueId" class="form-label fw-semibold">Venue</label>
+                        <select asp-for="VenueId" class="form-select" asp-items="ViewBag.Venues">
+                            <option value="">-- Select venue --</option>
+                        </select>
+                        <span asp-validation-for="VenueId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Type" class="form-label fw-semibold">Event Type</label>
+                        <select asp-for="Type" class="form-select" asp-items="eventTypes">
+                            <option value="">-- Select type --</option>
+                        </select>
+                        <span asp-validation-for="Type" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="Price" class="form-label fw-semibold">Price (₹)</label>
+                        <input asp-for="Price" type="number" min="0" step="0.01" class="form-control" />
+                        <span asp-validation-for="Price" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="TotalTickets" class="form-label fw-semibold">Total Tickets</label>
+                        <input asp-for="TotalTickets" type="number" min="1" class="form-control" />
+                        <span asp-validation-for="TotalTickets" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="IsSeatBased" class="form-label fw-semibold d-block">Seat Based?</label>
+                        <div class="form-check form-switch">
+                            <input asp-for="IsSeatBased" class="form-check-input" />
+                            <label class="form-check-label" asp-for="IsSeatBased">Enable seat selection</label>
+                        </div>
+                        <span asp-validation-for="IsSeatBased" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label asp-for="ImageUrl" class="form-label fw-semibold">Image URL</label>
+                        <input asp-for="ImageUrl" class="form-control" placeholder="https://google.com/Cricket_image.jpg" />
+                        <span asp-validation-for="ImageUrl" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <div class="mt-5 d-flex justify-content-end gap-3">
+                    <button type="submit" class="btn btn-success btn-lg px-5">
+                        <i class="bi bi-plus-circle me-1"></i> Create Event
+                    </button>
+                    <a asp-action="Index" class="btn btn-outline-secondary btn-lg px-5">Cancel</a>
+                </div>
+            </form>
         </div>
-
-        <div class="form-group">
-            <label asp-for="EventDateTime"></label>
-            <input asp-for="EventDateTime" class="form-control" type="datetime-local" />
-        </div>
-
-        @* <div class="form-group"> *@
-        @*     <label asp-for="Venue.Name"></label> *@
-        @*     <select asp-for="Venue.Name" class="form-control" asp-items="@ViewBag.Venues"> *@
-        @*         <option value="">Select</option> *@
-        @*     </select> *@
-        @*     <span asp-validation-for="Venue.Name" class="text-danger"></span> *@
-        @* </div> *@
-
-        <div class="form-group"> 
-            <label asp-for="VenueId"></label> 
-         <select asp-for="VenueId" class="form-control" asp-items="@ViewBag.Venues"> 
-           <option value="">Select</option> 
-            </select> 
-             <span asp-validation-for="VenueId" class="text-danger"></span> 
-         </div>
-
-        <div class="form-group">
-            <label asp-for="IsSeatBased"></label>
-            <input asp-for="IsSeatBased" type="checkbox" class="form-check-input" />
-        </div>
-        <div class="form-group">
-            <label asp-for="Price"></label>
-            <input asp-for="Price" class="form-control" type="number" step="0.01" />
-        </div>
-
-
-        <div class="form-group">
-            <label asp-for="TotalTickets">Total Tickets</label>
-            <input asp-for="TotalTickets" class="form-control" />
-        </div>
-        <div class="form-group">
-            <label asp-for="ImageUrl">Image URL</label>
-            <input asp-for="ImageUrl" class="form-control" placeholder="Paste image link (e.g., https://...)" />
-            <span asp-validation-for="ImageUrl" class="text-danger"></span>
-        </div>
-        <div class="form-group">
-            <label asp-for="Type">Event Type</label>
-            @{
-                var eventTypes = Enum.GetValues(typeof(TicketBookingWebApp.Domain.Enums.EventType))
-                .Cast<TicketBookingWebApp.Domain.Enums.EventType>()
-                .Select(e => new SelectListItem
-            {
-                Value = ((int)e).ToString(),
-                Text = e.ToString(),
-            }).ToList();
-            }
-            <select asp-for="Type" class="form-control" asp-items="ViewBag.EventTypes">
-                <option value="">Select Event Type</option>
-            </select>
-
-
-            <span asp-validation-for="Type" class="text-danger"></span>
-        </div>
-
-        <button type="submit" class="btn btn-success">Create</button>
-        <a class="btn btn-secondary" href="@Url.Action("Index")">Cancel</a>
-    </form>
+    </div>
 </div>
-

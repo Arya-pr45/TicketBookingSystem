@@ -9,7 +9,9 @@
 	<link rel="stylesheet" href="~/TicketBookingWebApp.styles.css" asp-append-version="true" />
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.2.3/css/bootstrap.min.css" />
-	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js" integrity="sha384-" crossorigin="anonymous"></script>
+	<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" />
 	<script src="~/lib/jquery/dist/jquery.min.js"></script>
 	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 	<script src="~/js/site.js" asp-append-version="true"></script>
@@ -23,10 +25,11 @@
 					<span class="navbar-toggler-icon"></span>
 				</button>
 				<div class="collapse navbar-collapse" id="nav">
-					<ul class="navbar-nav ms-auto">
+					<ul class="navbar-nav ms-auto align-items-center">
 						<li class="nav-item">
 							<a class="nav-link text-dark fw-semibold" asp-action="Index" asp-controller="Home">Home</a>
 						</li>
+
 						@if (User.Identity.IsAuthenticated)
 						{
 							if (!User.IsInRole("Admin"))
@@ -38,8 +41,15 @@
 									<a class="nav-link text-dark" asp-controller="Event" asp-action="MyBookings">My Bookings</a>
 								</li>
 							}
-							<li class="nav-item">
-								<a class="nav-link text-danger fw-bold" asp-controller="Auth" asp-action="Logout">Logout</a>
+							<li class="nav-item dropdown">
+								<a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+									<i class="bi bi-person-circle fs-4 text-primary me-1"></i> @User.Identity.Name
+								</a>
+								<ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+									<li><a class="dropdown-item" asp-controller="Home" asp-action="Profile">Profile</a></li>
+									<li><hr class="dropdown-divider" /></li>
+									<li><a class="dropdown-item text-danger fw-semibold" asp-controller="Auth" asp-action="Logout">Logout</a></li>
+								</ul>
 							</li>
 						}
 						else
@@ -52,6 +62,7 @@
 							</li>
 						}
 					</ul>
+
 				</div>
 			</div>
 		</nav>
@@ -78,6 +89,33 @@
 	@await RenderSectionAsync("Scripts", required: false)
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+	<script>
+		window.addEventListener('beforeunload', function () {
+			document.getElementById('reloadOverlay').style.display = 'flex';
+		});
+	</script>
+	<div id="reloadOverlay" style="display:none;">
+		<div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+	</div>
+	@await Html.PartialAsync("_DeleteConfirmationModal")
+	<script>
+		let formToSubmit = null;
+
+		function showConfirmModal(formId, message = "Are you sure you want to proceed?") {
+			formToSubmit = document.getElementById(formId);
+			document.getElementById("globalConfirmMessage").innerText = message;
+
+			const modal = new bootstrap.Modal(document.getElementById("globalConfirmModal"));
+			modal.show();
+		}
+
+		document.getElementById("globalConfirmBtn").addEventListener("click", function () {
+			if (formToSubmit) {
+				formToSubmit.submit();
+			}
+		});
+	</script>
 
 </body>
 </html>
+

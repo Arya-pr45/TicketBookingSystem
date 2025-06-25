@@ -26,12 +26,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\TicketBookingWebApp.Common\TicketBookingWebApp.Common.csproj" />
     <ProjectReference Include="..\TicketBookingWebApp.Domain\TicketBookingWebApp.Domain.csproj" />
     <ProjectReference Include="..\TicketBookingWebApp.Infrastructure\TicketBookingWebApp.Infrastructure.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Helpers\" />
   </ItemGroup>
 
 </Project>

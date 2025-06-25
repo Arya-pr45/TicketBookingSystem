@@ -12,6 +12,8 @@ using TicketBookingWebApp.Application.Mapping;
 using System.Security.Claims;
 using Serilog;
 using TicketBookingWebApp.Application.DTOs;
+using TicketBookingWebApp.Web.Middlewares;
+using TicketBookingWebApp.Infrastructure.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,6 +48,8 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 builder.Services.Configure<SmtpDto>(builder.Configuration.GetSection("Smtp"));
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<IAdminRepository, AdminRepository>();
 builder.Services.AddScoped<IVenueRepository, VenueRepository>();
 builder.Services.AddScoped<IVenueService, VenueService>();
 builder.Services.AddScoped<IEventRepository, EventRepository>();
@@ -62,6 +66,8 @@ Log.Logger = new LoggerConfiguration()
 builder.Host.UseSerilog();
 
 var app = builder.Build();
+app.UseMiddleware<NoCacheMiddleware>();
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
